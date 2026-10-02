@@ -2,14 +2,17 @@
 	path = starVLA
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/starVLA
+	shallow = true
 [submodule "third_party/LIBERO"]
 	path = third_party/LIBERO
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/LIBERO
+	shallow = true
 [submodule "third_party/openvla-oft"]
 	path = third_party/openvla-oft
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/openvla-oft
+	shallow = true
 [submodule "third_party/Isaac-GR00T"]
 	path = third_party/Isaac-GR00T
 	url = https://github.com/NVIDIA/Isaac-GR00T.git
@@ -17,7 +20,9 @@
 	path = third_party/RoboTwin
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/RoboTwin
+	shallow = true
 [submodule "third_party/FastWAM"]
 	path = third_party/FastWAM
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/FastWAM
+	shallow = true
