@@ -1,0 +1,122 @@
+axis: tonal_response
+version: raw_reprocess_isp_tone_v1
+
+baseline:
+  name: default_isp
+  deploy: false
+  description: "Clean/default raw-to-RGB reprocess ISP; final RGB matches the original MuJoCo RGB."
+
+shared:
+  tone_function: "logit(Y_prime) = logit(pivot) + c * (logit(Y) - logit(pivot))"
+  parameter: c
+  luma_weights:
+    r: 0.2126
+    g: 0.7152
+    b: 0.0722
+  image_quantize_bits: 0
+  exposure_ev: 0.0
+
+primary_deploy_mode: raw_reprocess_isp_tone
+
+modes:
+  raw_reprocess_isp_tone:
+    description: "Unprocess RGB to pseudo-RAW, keep RAW unchanged, then replace the tone stage inside the raw-to-RGB reprocess ISP."
+    pipeline_stage: raw_to_rgb_reprocess_isp_tone
+    input_domain: pseudo_raw_linear_rgb10
+    output_domain: reprocessed_rgb_float32
+    pivot: 0.18
+    transform:
+      - "RGB8 -> unprocess -> RAW10 using FIXED_RAW_RGB10_PARAMS"
+      - "RAW10 -> linear RGB with default reprocess gains"
+      - "Y = dot(linear RGB, luma_weights)"
+      - "Y_prime = T_c(Y, pivot=0.18)"
+      - "linear RGB prime = linear RGB * Y_prime / max(Y, eps)"
+      - "RGB prime = smoothstep(sRGB_gamma(linear RGB prime))"
+    artifact_dir: artifacts/tonal_response_axis/raw_reprocess_isp_tone
+    curve_plot: artifacts/tonal_response_axis/raw_reprocess_isp_tone/raw_reprocess_isp_tone_curves.png
+    contact_sheets:
+      agentview: artifacts/tonal_response_axis/raw_reprocess_isp_tone/agentview_raw_reprocess_isp_tone_contact_sheet.png
+      wrist: artifacts/tonal_response_axis/raw_reprocess_isp_tone/wrist_raw_reprocess_isp_tone_contact_sheet.png
+      diagnostic: artifacts/tonal_response_axis/raw_reprocess_isp_tone/diagnostic_raw_reprocess_isp_tone_contact_sheet.png
+    deploy_settings:
+      - name: tonal_c0p05
+        c: 0.05
+        effect: very_flat
+      - name: tonal_c0p335
+        c: 0.3351
+        effect: strong_flat
+      - name: tonal_c0p646
+        c: 0.6458
+        effect: mild_flat
+      - name: tonal_c2p50
+        c: 2.5
+        effect: mild_contrast
+      - name: tonal_c5p00
+        c: 5.0
+        effect: strong_contrast
+      - name: tonal_c12p00
+        c: 12.0
+        effect: very_contrast
+    displayed_settings:
+      - name: tonal_c0p05
+        c: 0.05
+      - name: tonal_c0p335
+        c: 0.3351
+      - name: tonal_c0p646
+        c: 0.6458
+      - name: default_isp
+        c: 1.0
+      - name: tonal_c2p50
+        c: 2.5
+      - name: tonal_c5p00
+        c: 5.0
+      - name: tonal_c12p00
+        c: 12.0
+    sampling_note: "Left flat settings are held fixed from visual inspection; right contrast settings are re-sampled for smoother visual spacing in the agentview contact sheet while retaining a severe endpoint."
+
+  rgb_reprocess_tone:
+    description: "Unprocess RGB to pseudo-RAW, run the default reprocess ISP back to RGB, then apply the same luma-preserving tone contrast transform in display RGB space."
+    pipeline_stage: post_reprocess_rgb_tone
+    input_domain: default_reprocessed_rgb
+    output_domain: rgb_float32
+    pivot: 0.50
+    artifact_dir: artifacts/tonal_response_axis/rgb_reprocess_tone
+    curve_plot: artifacts/tonal_response_axis/rgb_reprocess_tone/rgb_post_isp_tone_curves.png
+    contact_sheets:
+      agentview: artifacts/tonal_response_axis/rgb_reprocess_tone/agentview_rgb_reprocess_tone_contact_sheet.png
+      wrist: artifacts/tonal_response_axis/rgb_reprocess_tone/wrist_rgb_reprocess_tone_contact_sheet.png
+      diagnostic: artifacts/tonal_response_axis/rgb_reprocess_tone/diagnostic_rgb_reprocess_tone_contact_sheet.png
+    deploy_settings_ref: raw_reprocess_isp_tone.deploy_settings
+
+condition_naming:
+  raw_reprocess_isp_tone: "tonal_raw_isp_{setting}"
+  rgb_reprocess_tone: "tonal_rgb_post_{setting}"
+
+recommended_deploy:
+  modes:
+    - raw_reprocess_isp_tone
+  conditions_per_model: 6
+  baseline_source: "Use the existing clean/default reprocess run; do not submit default_isp as an extra perturbation job."
+  suites:
+    - libero_spatial
+    - libero_object
+    - libero_goal
+    - libero_10
+  checkpoints:
+    - Qwen3-VL-OFT-LIBERO-4in1
+    - Qwen3-VL-PI-LIBERO-4in1
+    - WM4A-CosmoPredict-GR00T-LIBERO-4in1
+    - WM4A-Wan2d2-OFT-LIBERO-4in1
+    - PI0
+    - PI05
+
+metrics_to_log:
+  - tonal_mode
+  - tonal_setting
+  - tonal_c
+  - tonal_pivot
+  - pipeline_stage
+  - clipping_ratio
+  - mean_luminance_delta
+  - success_rate
+  - num_trials

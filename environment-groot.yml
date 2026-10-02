@@ -1,0 +1,9 @@
+name: groot
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - ffmpeg<8
+  - cmake
+  - ninja

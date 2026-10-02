@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1080" viewBox="0 0 1900 1080">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#243047"/>
+    </marker>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .stage { fill: #ffffff; stroke: #c4ccd8; stroke-width: 1.5; rx: 12; ry: 12; }
+      .raw { fill: #e6f3ed; stroke: #2c5b47; }
+      .denoise { fill: #e3f1ff; stroke: #2c5d87; }
+      .feat { fill: #fff1d8; stroke: #7c5c21; }
+      .state { fill: #eadfff; stroke: #5c458a; }
+      .head { fill: #fde5ed; stroke: #8d3f5a; }
+      .isp { fill: #eaf4d7; stroke: #55752c; }
+      .out { fill: #ffffff; stroke: #27364f; }
+      .box { stroke-width: 2; rx: 8; ry: 8; }
+      .title { font-family: Arial, Helvetica, sans-serif; font-size: 34px; font-weight: 700; fill: #172033; }
+      .subtitle { font-family: Arial, Helvetica, sans-serif; font-size: 18px; fill: #4d5a73; }
+      .stageTitle { font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 700; fill: #27364f; }
+      .label { font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 700; fill: #1d2840; }
+      .small { font-family: Arial, Helvetica, sans-serif; font-size: 14px; fill: #46536a; }
+      .tiny { font-family: Arial, Helvetica, sans-serif; font-size: 12px; fill: #556278; }
+      .code { font-family: Menlo, Consolas, monospace; font-size: 13px; fill: #263246; }
+      .line { stroke: #243047; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .soft { stroke: #7b879a; stroke-width: 1.8; fill: none; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+      .bus { stroke: #7b879a; stroke-width: 1.8; fill: none; stroke-dasharray: 7 6; }
+      .join { fill: #f8fafc; stroke: #27364f; stroke-width: 2; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1900" height="1080"/>
+
+  <text x="46" y="58" class="title">RAW-VLA Network Structure</text>
+  <text x="48" y="88" class="subtitle">Horizontal pipeline with concrete blocks: RAW temporal denoise, parallel conditioning, recurrent ISP heads, structured adaptive ISP.</text>
+
+  <rect x="35" y="120" width="265" height="865" class="stage"/>
+  <text x="55" y="150" class="stageTitle">1. RAW Burst Input</text>
+
+  <rect x="70" y="190" width="195" height="150" class="box raw"/>
+  <text x="94" y="222" class="label">Observation Burst</text>
+  <text x="92" y="252" class="code">{X<tspan baseline-shift="sub" font-size="10">t-K+1</tspan>,...,X<tspan baseline-shift="sub" font-size="10">t</tspan>}</text>
+  <text x="92" y="282" class="code">[B,K,3,H,W]</text>
+  <text x="92" y="312" class="small">linear RGB RAW</text>
+
+  <rect x="70" y="420" width="195" height="130" class="box raw"/>
+  <text x="106" y="452" class="label">Reference</text>
+  <text x="116" y="482" class="code">X<tspan baseline-shift="sub" font-size="10">t</tspan></text>
+  <text x="92" y="512" class="small">current frame anchor</text>
+
+  <rect x="70" y="635" width="195" height="135" class="box raw"/>
+  <text x="100" y="668" class="label">History Frames</text>
+  <text x="92" y="698" class="code">X<tspan baseline-shift="sub" font-size="10">t-K+1</tspan> ... X<tspan baseline-shift="sub" font-size="10">t-1</tspan></text>
+  <text x="92" y="728" class="small">only for random-noise</text>
+  <text x="92" y="750" class="small">suppression</text>
+
+  <path d="M265 265 H345" class="line"/>
+
+  <rect x="330" y="120" width="330" height="865" class="stage"/>
+  <text x="350" y="150" class="stageTitle">2. RAW Temporal Denoise</text>
+
+  <rect x="365" y="185" width="260" height="245" class="box denoise"/>
+  <text x="415" y="218" class="label">fft_cons Candidate</text>
+  <text x="388" y="252" class="code">patch: 32x32, stride 16</text>
+  <text x="388" y="278" class="code">window: Hann</text>
+  <text x="388" y="304" class="code">FFT per RAW channel</text>
+  <text x="388" y="330" class="code">r = sigma2 / (|F_i-F_t|^2+sigma2)</text>
+  <text x="388" y="356" class="code">F_out = F_t + sum w_i*r_i*(F_i-F_t)</text>
+  <text x="388" y="392" class="small">current frame remains anchor</text>
+
+  <rect x="365" y="520" width="260" height="185" class="box denoise"/>
+  <text x="408" y="553" class="label">RAW Denoise Mix</text>
+  <text x="388" y="587" class="code">x_fft = fft_cons(B_t)</text>
+  <text x="388" y="615" class="code">lambda from ISP state</text>
+  <text x="388" y="643" class="code">X_t^d = (1-lambda)X_t</text>
+  <text x="445" y="671" class="code">+ lambda*x_fft</text>
+
+  <rect x="385" y="785" width="220" height="78" class="box raw"/>
+  <text x="448" y="818" class="label">Output</text>
+  <text x="435" y="846" class="code">X_t^d [B,3,H,W]</text>
+
+  <path d="M495 430 V520" class="line"/>
+  <path d="M495 705 V785" class="line"/>
+  <path d="M625 824 H710" class="line"/>
+
+  <rect x="695" y="120" width="485" height="865" class="stage"/>
+  <text x="715" y="150" class="stageTitle">3. Parallel Conditioning Encoders</text>
+
+  <rect x="735" y="190" width="395" height="265" class="box feat"/>
+  <text x="845" y="222" class="label">Spatial Encoder</text>
+  <text x="760" y="256" class="code">input: X_t^d [B,3,H,W]</text>
+  <text x="760" y="286" class="code">ConvBlock(3,C,s=1)</text>
+  <text x="760" y="312" class="code">ConvBlock(C,C,s=1)</text>
+  <text x="760" y="338" class="code">ConvBlock(C,2C,s=2)</text>
+  <text x="760" y="364" class="code">ConvBlock(2C,2C,s=1)</text>
+  <text x="760" y="390" class="code">ConvBlock(2C,4C,s=2)</text>
+  <text x="760" y="416" class="code">ConvBlock(4C,4C,s=1)</text>
+  <text x="760" y="442" class="code">F_t [B,4C,H/4,W/4]</text>
+
+  <rect x="735" y="520" width="395" height="210" class="box feat"/>
+  <text x="815" y="552" class="label">Histogram Encoder</text>
+  <text x="760" y="586" class="code">Hist(X_t^d)</text>
+  <text x="760" y="612" class="code">linear: R,G,B,L, 64 bins</text>
+  <text x="760" y="638" class="code">log: R,G,B, 64 bins</text>
+  <text x="760" y="664" class="code">stats: q01,q05,q50,q95,q99</text>
+  <text x="760" y="690" class="code">MLP: D_hist -> 256 -> 128 -> 64</text>
+  <text x="760" y="716" class="code">e_t^H [B,64]</text>
+
+  <rect x="735" y="790" width="395" height="118" class="box state"/>
+  <text x="840" y="822" class="label">Feature Fusion</text>
+  <text x="760" y="856" class="code">g_t = MLP(mean, std, attn-pool) [B,128]</text>
+  <text x="760" y="882" class="code">zbar_t = [g_t, e_t^H, E_Theta(Theta_{t-1})]</text>
+
+  <path d="M930 455 V790" class="line"/>
+  <path d="M930 730 V790" class="line"/>
+  <path d="M1130 849 H1215" class="line"/>
+
+  <rect x="1215" y="120" width="320" height="865" class="stage"/>
+  <text x="1235" y="150" class="stageTitle">4. Streaming State</text>
+
+  <rect x="1245" y="245" width="260" height="165" class="box state"/>
+  <text x="1305" y="278" class="label">Fusion MLP</text>
+  <text x="1268" y="312" class="code">Linear(128+64+32,256)</text>
+  <text x="1268" y="338" class="code">SiLU</text>
+  <text x="1268" y="364" class="code">Linear(256,128)</text>
+  <text x="1268" y="390" class="code">u_t [B,128]</text>
+
+  <rect x="1245" y="510" width="260" height="175" class="box state"/>
+  <text x="1315" y="543" class="label">GRUCell</text>
+  <text x="1268" y="577" class="code">input: u_t</text>
+  <text x="1268" y="603" class="code">hidden: S_{t-1}</text>
+  <text x="1268" y="629" class="code">hidden_size = 128</text>
+  <text x="1268" y="655" class="code">output: S_t [B,128]</text>
+
+  <rect x="1245" y="780" width="260" height="105" class="box state"/>
+  <text x="1292" y="813" class="label">Condition Vector</text>
+  <text x="1268" y="847" class="code">c_t = [u_t,S_t,e_t^H]</text>
+  <text x="1268" y="873" class="code">shape [B,320]</text>
+
+  <path d="M1375 410 V510" class="line"/>
+  <path d="M1375 685 V780" class="line"/>
+  <path d="M1505 832 H1548" class="line"/>
+  <path d="M1548 263 V850" class="bus"/>
+  <path d="M1548 263 H1600" class="line"/>
+  <path d="M1548 458 H1600" class="line"/>
+  <path d="M1548 662 H1600" class="line"/>
+  <path d="M1548 850 H1600" class="line"/>
+
+  <rect x="1570" y="120" width="295" height="865" class="stage"/>
+  <text x="1590" y="150" class="stageTitle">5. ISP Heads and Output</text>
+
+  <rect x="1600" y="185" width="235" height="155" class="box head"/>
+  <text x="1650" y="218" class="label">Denoise Head</text>
+  <text x="1620" y="252" class="code">Linear(320,128)</text>
+  <text x="1620" y="278" class="code">SiLU</text>
+  <text x="1620" y="304" class="code">Linear(128,1)</text>
+  <text x="1620" y="328" class="code">eta_denoise</text>
+
+  <rect x="1600" y="375" width="235" height="165" class="box head"/>
+  <text x="1656" y="408" class="label">Color Head</text>
+  <text x="1620" y="442" class="code">Linear(320,128)</text>
+  <text x="1620" y="468" class="code">Linear(128,9)</text>
+  <text x="1620" y="494" class="code">A=I+OffDiag(0.25*tanh(dA))</text>
+  <text x="1620" y="520" class="code">gain exp residual</text>
+
+  <rect x="1600" y="575" width="235" height="175" class="box head"/>
+  <text x="1660" y="608" class="label">Tone Head</text>
+  <text x="1620" y="642" class="code">Linear(320,128)</text>
+  <text x="1620" y="668" class="code">Linear(128,3*7) + fixed 0</text>
+  <text x="1620" y="694" class="code">local ConvBlock(3,C)</text>
+  <text x="1620" y="720" class="code">monotonic Bernstein curve</text>
+
+  <rect x="1600" y="790" width="235" height="120" class="box head"/>
+  <text x="1628" y="823" class="label">Update + Smoothing</text>
+  <text x="1620" y="857" class="code">Linear(352,128)</text>
+  <text x="1620" y="883" class="code">Linear(128,3)</text>
+  <text x="1620" y="907" class="code">alpha_K,A,T</text>
+
+  <rect x="1250" y="930" width="585" height="105" class="box isp"/>
+  <text x="1340" y="963" class="label">Structured Adaptive ISP Operator</text>
+  <text x="1280" y="995" class="code">X_t^d -> RAW noise mix -> 3x3 color/gain -> bidirectional tone -> Y_t [B,3,H,W]</text>
+  <path d="M1718 910 C1718 945 1660 950 1600 950" class="line"/>
+  <path d="M1600 340 C1510 420 1490 780 1515 930" class="soft"/>
+  <path d="M1600 540 C1535 620 1525 790 1535 930" class="soft"/>
+  <path d="M1600 750 C1565 820 1560 880 1565 930" class="soft"/>
+
+  <rect x="1030" y="930" width="145" height="105" class="box out"/>
+  <text x="1067" y="972" class="label">Output</text>
+  <text x="1060" y="1004" class="code">Y_t RGB</text>
+  <path d="M1250 982 H1175" class="line"/>
+
+  <text x="55" y="1035" class="tiny">Note: GRU fusion also receives a compact embedding of previous explicit ISP parameters Theta_{t-1}.</text>
+</svg>

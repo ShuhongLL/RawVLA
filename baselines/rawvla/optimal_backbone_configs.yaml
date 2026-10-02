@@ -1,0 +1,33 @@
+# V6/V7 selection; paired default-lighting RGB was evaluation-only.
+selection_version: v6_v7_checkpoints_xmlfix_render_20260822
+selection_metric: five_domain_agent_wrist_mean_pixel_mae
+visualization_dataset_version: action_xmlfix_20260816T0839Z
+checkpoints_retrained: false
+
+common_rawvla:
+  burst_frames: 6
+  rnn_frames: 6
+  split_luma_chroma_condition: true
+  state_dim: 128
+  luma_state_dim: 64
+  luminance_weights: [1.0, 1.0, 1.0]
+  luma_spatial_input: luma
+  max_exposure_ev: 6.0
+  fixed_update_alpha: 1.0
+  exposure_loss_type: two_sided_l1
+  exposure_target: 0.48
+  exposure_loss_weight: 0.01
+  exposure_objective_clamp: ste
+  chroma_prior_enabled: true
+  chroma_prior_weight: 0.001
+  chroma_prior_margin: 0.10
+  use_local_color: false
+  use_local_tone: false
+
+backbones:
+  qwen3_pi: {action_loss_weight: 0.0015, selected_step: 2000, paired_rgb_mae: 0.191205, worst_domain_mae: 0.277359}
+  qwen3_oft: {action_loss_weight: 0.20, selected_step: 2000, paired_rgb_mae: 0.161348, worst_domain_mae: 0.278315}
+  wm4a_cosmos: {action_loss_weight: 0.01, selected_step: 2000, paired_rgb_mae: 0.173550, worst_domain_mae: 0.270266}
+  wm4a_wan: {action_loss_weight: 0.02, selected_step: 2000, paired_rgb_mae: 0.188693, worst_domain_mae: 0.264090}
+  pi0: {action_loss_weight: 0.15, selected_step: 2000, paired_rgb_mae: 0.205859, worst_domain_mae: 0.365185}
+  pi05: {action_loss_weight: 0.15, selected_step: 2000, paired_rgb_mae: 0.173979, worst_domain_mae: 0.241437}

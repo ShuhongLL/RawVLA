@@ -1,0 +1,99 @@
+datasets:
+  vla_data:
+    dataset_py: rawvla_npz_datasets
+    data_mix: rawvla_light_npz
+    cache_root: ${oc.env:RAWVLA_ROOT}/benchmark_data/libero/rawvla_light_train_raw_npz
+    burst_frames: 6
+    rnn_frames: 6
+    observation_stride: 8
+    action_horizon: 8
+    samples_per_episode: 32
+    virtual_length: 100000
+    normalization: starvla_minmax
+    stats_path: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/Qwen3-VL-OFT-LIBERO-4in1/dataset_statistics.json
+    per_device_batch_size: 1
+    num_workers: 1
+    prefetch_factor: 1
+    persistent_workers: true
+    pin_memory: true
+
+framework:
+  name: QwenOFT
+  qwenvl:
+    base_vlm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/Qwen3-VL-4B-Instruct
+    attn_implementation: sdpa
+  action_model:
+    action_model_type: DiT-B
+    action_dim: 7
+    action_hidden_dim: 2560
+    future_action_window_size: 7
+    past_action_window_size: 0
+    action_horizon: 8
+  raw_frontend:
+    name: rawvla
+    source_key: raw_burst_float32
+    input_format: rgb_raw
+    trainable: true
+    burst_frames: 6
+    rnn_frames: 6
+    spatial_width: 32
+    hist_bins: 64
+    state_dim: 128
+    luma_state_dim: 64
+    fft_patch_size: 32
+    fft_stride: 16
+    use_local_color: false
+    use_local_tone: false
+    split_luma_chroma_condition: true
+    luminance_weights: [1.0, 1.0, 1.0]
+    luma_spatial_input: luma
+    exposure_target: 0.48
+    exposure_loss_weight: 0.01
+    exposure_loss_type: two_sided_l1
+    exposure_objective_clamp: ste
+    max_exposure_ev: 6.0
+    fixed_update_alpha: 1.0
+    chroma_prior_enabled: true
+    chroma_prior_weight: 0.001
+    chroma_prior_lower: [0.025407744850963355, -0.35791672915220263]
+    chroma_prior_upper: [0.25704274773597713, -0.0317848339676857]
+    chroma_prior_margin: 0.1
+
+run_id: rawvla_qwen3_oft_libero
+run_root_dir: ${oc.env:RAWVLA_ROOT}/results
+seed: 42
+
+trainer:
+  eval_interval: 100000000
+  freeze_modules: qwen_vl_interface,action_model
+  require_only_trainable_module: raw_frontend
+  gradient_accumulation_steps: 8
+  gradient_clipping: 1.0
+  is_resume: false
+  learning_rate:
+    base: 0.0001
+    raw_frontend: 0.0001
+  logging_frequency: 20
+  lr_scheduler_type: cosine_with_min_lr
+  max_train_steps: 2000
+  num_warmup_steps: 100
+  optimizer:
+    betas: [0.9, 0.95]
+    eps: 1.0e-8
+    weight_decay: 1.0e-8
+  save_interval: 1000
+  scheduler_specific_kwargs:
+    min_lr: 1.0e-6
+  pretrained_checkpoint: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/Qwen3-VL-OFT-LIBERO-4in1/checkpoints/steps_50000_pytorch_model.pt
+  max_grad_norm: 1.0
+  frozen_modules_eval: true
+  action_loss_weight: 0.2
+  save_format: pt
+  save_trainable_only: true
+  rawvla_visualization:
+    enabled: false
+
+wandb_entity: null
+wandb_project: rawvla
+is_debug: false
+version_id: "0.21"

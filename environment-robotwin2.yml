@@ -1,0 +1,47 @@
+name: robotwin
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip
+  # SAPIEN 3.0.0b1 still imports pkg_resources, removed in setuptools 81+.
+  - setuptools>=77,<81
+  - wheel
+  - ffmpeg
+  - gcc_linux-64=12
+  - gxx_linux-64=12
+  - cmake
+  - ninja
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu130
+      - torch==2.13.0+cu130
+      - torchvision==0.28.0+cu130
+      - transforms3d==0.4.2
+      - sapien==3.0.0b1
+      - scipy==1.10.1
+      - scikit-image==0.21.0
+      - mplib==0.2.1
+      - gymnasium==0.29.1
+      - trimesh==4.4.3
+      - open3d==0.18.0
+      - imageio==2.34.2
+      - toppra==0.6.3
+      - opencv-python-headless
+      - pyyaml
+      - pydantic
+      - zarr
+      - huggingface_hub==0.25.0
+      - h5py
+      - pyglet<2
+      - wandb
+      - moviepy
+      - termcolor
+      - av
+      - matplotlib
+      - rich==14.2.0
+      - websockets==15.0.1
+      - accelerate==1.5.2
+      - json-numpy==2.1.1
+      - msgpack==1.1.2
+      - omegaconf==2.3.0
+      - warp-lang==1.12.0

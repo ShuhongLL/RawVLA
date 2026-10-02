@@ -1,0 +1,228 @@
+defaults:
+  submit_info: submit_info.yaml
+  data_root: /path/to/RAW-VLA
+  result_root: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+  trials: 50
+  suites:
+    - libero_spatial
+    - libero_object
+    - libero_goal
+    - libero_10
+  gpu_type: NVIDIA-L4
+  family: ml.gni3
+  priority: 6
+
+profiles:
+  qwen3_oft_l4:
+    description: "Qwen3-VL-OFT chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    models:
+      - Qwen3-VL-OFT-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 2
+    gpu_visible: "0,1"
+    cpu: 16
+    memory_gib: 96
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_QWEN_SHARD: "1"
+      RAWVLA_QWEN_DEVICE_MAP: balanced_low_0
+      RAWVLA_QWEN_MAX_MEMORY: "0:2GiB,1:22GiB"
+      RAWVLA_QWEN_ACTION_DEVICE: cuda:0
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      RAWVLA_EMPTY_CACHE_EACH_STEP: "1"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  qwen3_oft_h20:
+    description: "Qwen3-VL-OFT chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
+    models:
+      - Qwen3-VL-OFT-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    resource_queue_id: q-20260626224930-pzw64
+    instance_type_id: ml.hpcpni3l.48xlarge
+    zone_id: ""
+    gpu_type: NVIDIA-H20-SXM5-96GB
+    family: ml.hpcpni3l
+    gpu_count: 8
+    gpu_visible: "0"
+    cpu: 165
+    memory_gib: 1785
+    rdma_eni_count: 8
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      RAWVLA_EMPTY_CACHE_EACH_STEP: "1"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  qwen3_pi_l4:
+    description: "Qwen3-VL-PI chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    models:
+      - Qwen3-VL-PI-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 3
+    gpu_visible: "0,1,2"
+    cpu: 16
+    memory_gib: 160
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_QWEN_SHARD: "1"
+      RAWVLA_QWEN_DEVICE_MAP: balanced_low_0
+      RAWVLA_QWEN_MAX_MEMORY: "0:2GiB,1:18GiB,2:18GiB"
+      RAWVLA_QWEN_ACTION_DEVICE: cuda:0
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      RAWVLA_EMPTY_CACHE_EACH_STEP: "1"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  qwen3_pi_h20:
+    description: "Qwen3-VL-PI chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
+    models:
+      - Qwen3-VL-PI-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    resource_queue_id: q-20260626224930-pzw64
+    instance_type_id: ml.hpcpni3l.48xlarge
+    zone_id: ""
+    gpu_type: NVIDIA-H20-SXM5-96GB
+    family: ml.hpcpni3l
+    gpu_count: 8
+    gpu_visible: "0"
+    cpu: 165
+    memory_gib: 1785
+    rdma_eni_count: 8
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      RAWVLA_EMPTY_CACHE_EACH_STEP: "1"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  wm4a_cosmo_l4:
+    description: "WM4A CosmoPredict chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    models:
+      - WM4A-CosmoPredict-GR00T-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 2
+    gpu_visible: "0,1"
+    cpu: 16
+    memory_gib: 96
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_WM_SHARD: "1"
+      RAWVLA_WM_SHARD_DEVICES: "0,1"
+      RAWVLA_WM_BLOCK_DEVICES: "0,1"
+      RAWVLA_WM_AUX_DEVICE: cuda:1
+      RAWVLA_GROUP_RETRIES: "40"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  wm4a_cosmo_h20:
+    description: "WM4A CosmoPredict chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
+    models:
+      - WM4A-CosmoPredict-GR00T-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    resource_queue_id: q-20260626224930-pzw64
+    instance_type_id: ml.hpcpni3l.48xlarge
+    zone_id: ""
+    gpu_type: NVIDIA-H20-SXM5-96GB
+    family: ml.hpcpni3l
+    gpu_count: 8
+    gpu_visible: "0"
+    cpu: 165
+    memory_gib: 1785
+    rdma_eni_count: 8
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  wm4a_wan_l4:
+    description: "WM4A Wan2.2 chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    models:
+      - WM4A-Wan2d2-OFT-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 3
+    gpu_visible: "0,1,2"
+    cpu: 16
+    memory_gib: 128
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_WM_SHARD: "1"
+      RAWVLA_WM_SHARD_DEVICES: "0,1,2"
+      RAWVLA_WM_BLOCK_DEVICES: "0,1,2"
+      RAWVLA_WM_AUX_DEVICE: cuda:2
+      RAWVLA_GROUP_RETRIES: "40"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  wm4a_wan_h20:
+    description: "WM4A Wan2.2 chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
+    models:
+      - WM4A-Wan2d2-OFT-LIBERO-4in1
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    resource_queue_id: q-20260626224930-pzw64
+    instance_type_id: ml.hpcpni3l.48xlarge
+    zone_id: ""
+    gpu_type: NVIDIA-H20-SXM5-96GB
+    family: ml.hpcpni3l
+    gpu_count: 8
+    gpu_visible: "0"
+    cpu: 165
+    memory_gib: 1785
+    rdma_eni_count: 8
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  pi0_l4:
+    description: "PI0 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
+    models:
+      - PI0
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 1
+    gpu_visible: "0"
+    cpu: 16
+    memory_gib: 64
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+
+  pi05_l4:
+    description: "PI0.5 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
+    models:
+      - PI05
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    gpu_count: 1
+    gpu_visible: "0"
+    cpu: 16
+    memory_gib: 64
+    env:
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RAWVLA_GROUP_RETRIES: "1"
+      RAWVLA_GROUP_RETRY_SLEEP: "45"
+      RAWVLA_SERVER_CLEANUP_GRACE: "30"
+      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True

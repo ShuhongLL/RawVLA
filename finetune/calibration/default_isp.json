@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "calibration": "ColorChecker Classic 24-patch nominal sRGB/D65",
+  "input_domain": "three_channel_linear_raw",
+  "tone_curve": "linear_to_srgb",
+  "profiles": {
+    "agentview": {
+      "black_level": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exposure_gain": 2.6337815994410003,
+      "exposure_ev": 1.39713571823417,
+      "white_balance": [
+        0.9146254439278162,
+        1.0,
+        0.9641338920075412
+      ],
+      "color_matrix": [
+        [
+          1.3018742480184688,
+          -0.10035871936830826,
+          -0.20151552865016054
+        ],
+        [
+          -0.49916019522260724,
+          1.6551322591759963,
+          -0.1559720639533889
+        ],
+        [
+          0.03101401719364424,
+          -0.6028862100299455,
+          1.571872192836301
+        ]
+      ],
+      "source_image": "input/head_camera.png"
+    },
+    "wrist": {
+      "black_level": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "exposure_gain": 2.121019953241845,
+      "exposure_ev": 1.0847581929135677,
+      "white_balance": [
+        0.9494201739155355,
+        1.0,
+        1.0156451201820724
+      ],
+      "color_matrix": [
+        [
+          1.5771450136553098,
+          -0.45451570968272287,
+          -0.12262930397258692
+        ],
+        [
+          -0.4999527960627039,
+          1.7046305020864145,
+          -0.20467770602371058
+        ],
+        [
+          0.04509848744002906,
+          -0.6937569792215017,
+          1.6486584917814726
+        ]
+      ],
+      "source_images": [
+        "input/left_wrist.png",
+        "input/right_wrist.png"
+      ],
+      "shared_by": [
+        "left_wrist",
+        "right_wrist"
+      ]
+    }
+  }
+}
