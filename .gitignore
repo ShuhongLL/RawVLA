@@ -15,4 +15,5 @@ logs/
 
 *.mp4
 libero.egg-info/
+/libero/config.yaml
 .vscode/
