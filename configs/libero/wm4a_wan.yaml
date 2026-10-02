@@ -1,0 +1,31 @@
+extends: ../base/rawvla_libero.yaml
+
+run_id: rawvla_wm4a_wan_libero
+
+datasets:
+  vla_data:
+    stats_path: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/WM4A-Wan2d2-OFT-LIBERO-4in1/dataset_statistics.json
+
+framework:
+  name: WanOFT
+  obs_image_size: null
+  qwenvl:
+    base_vlm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/Qwen3-VL-4B-Instruct
+    attn_implementation: sdpa
+  world_model:
+    base_wm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/Wan-AI/Wan2.2-TI2V-5B-Diffusers
+    extract_layers: [-1]
+    vae_posterior: mode
+  action_model:
+    action_dim: 7
+    action_hidden_dim: 3072
+    action_horizon: 8
+    action_model_type: MLP
+    future_action_window_size: 7
+    past_action_window_size: 0
+    state_dim: 7
+
+trainer:
+  freeze_modules: backbone,action_model,action_query_proj
+  pretrained_checkpoint: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/WM4A-Wan2d2-OFT-LIBERO-4in1/checkpoints/steps_60000_pytorch_model.pt
+  action_loss_weight: 0.02

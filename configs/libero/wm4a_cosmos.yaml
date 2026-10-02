@@ -1,0 +1,48 @@
+extends: ../base/rawvla_libero.yaml
+
+run_id: rawvla_wm4a_cosmos_libero
+
+datasets:
+  vla_data:
+    stats_path: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/WM4A-CosmoPredict-GR00T-LIBERO-4in1/dataset_statistics.json
+
+framework:
+  name: CosmoPredict2GR00T
+  obs_image_size: null
+  qwenvl:
+    base_vlm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/Qwen3-VL-4B-Instruct
+  world_model:
+    base_wm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/nvidia/Cosmos-Predict2-2B-Video2World
+    extract_layers: [-1]
+    vae_posterior: mode
+  action_model:
+    action_dim: 7
+    action_horizon: 8
+    action_model_type: DiT-B
+    add_pos_embed: true
+    future_action_window_size: 7
+    hidden_size: 1024
+    max_seq_len: 1024
+    noise_beta_alpha: 1.5
+    noise_beta_beta: 1.0
+    noise_s: 0.999
+    num_inference_timesteps: 4
+    num_target_vision_tokens: 32
+    num_timestep_buckets: 1000
+    past_action_window_size: 0
+    repeated_diffusion_steps: 8
+    state_dim: 7
+    diffusion_model_cfg:
+      cross_attention_dim: 2048
+      dropout: 0.2
+      final_dropout: true
+      interleave_self_attention: true
+      norm_type: ada_norm
+      num_layers: 16
+      output_dim: 1024
+      positional_embeddings: null
+
+trainer:
+  freeze_modules: backbone,action_model
+  pretrained_checkpoint: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/WM4A-CosmoPredict-GR00T-LIBERO-4in1/checkpoints/steps_50000_pytorch_model.pt
+  action_loss_weight: 0.01

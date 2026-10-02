@@ -46,7 +46,7 @@ installation and validation commands are in [ENVIRONMENTS.md](ENVIRONMENTS.md).
 The two main environments are:
 
 ```bash
-conda env create -f environment-starvla-libero.yml
+conda env create -f environment-libero.yml
 conda env create -f environment-robotwin2.yml
 ```
 
@@ -68,9 +68,11 @@ the repository default.
 
 ## Training RAW-VLA
 
-The public Qwen3-OFT/LIBERO example is
-[`configs/rawvla_qwen3_oft_libero.yaml`](configs/rawvla_qwen3_oft_libero.yaml).
-Paths are resolved through `RAWVLA_ROOT`:
+The public LIBERO configurations share
+[`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml) and contain
+complete overrides for Qwen3-OFT, Qwen3-PI, WM4A-Cosmos, WM4A-Wan, PI0, and
+PI0.5 under [`configs/libero`](configs/libero). Paths are resolved through
+`RAWVLA_ROOT`:
 
 ```bash
 export RAWVLA_ROOT="$PWD"
@@ -78,11 +80,13 @@ conda activate starVLA
 cd starVLA
 accelerate launch --num_processes 1 \
   starVLA/training/train_starvla.py \
-  --config_yaml ../configs/rawvla_qwen3_oft_libero.yaml
+  --config_yaml ../configs/libero/qwen3_oft.yaml
 ```
 
-The VLA backbone is frozen and RAW-VLA is initialized from scratch. Adjust the
-dataset/checkpoint paths or loss weights in the config before a production run.
+Each child config uses a relative `extends` entry. The training loader merges
+the base first and the selected backbone config second; command-line dotlist
+overrides remain highest priority. The VLA backbone is frozen and RAW-VLA is
+initialized from scratch.
 
 ## Replay data
 

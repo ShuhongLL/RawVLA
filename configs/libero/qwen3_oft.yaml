@@ -1,0 +1,25 @@
+extends: ../base/rawvla_libero.yaml
+
+run_id: rawvla_qwen3_oft_libero
+
+datasets:
+  vla_data:
+    stats_path: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/Qwen3-VL-OFT-LIBERO-4in1/dataset_statistics.json
+
+framework:
+  name: QwenOFT
+  qwenvl:
+    base_vlm: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/Qwen3-VL-4B-Instruct
+    attn_implementation: sdpa
+  action_model:
+    action_model_type: DiT-B
+    action_dim: 7
+    action_hidden_dim: 2560
+    future_action_window_size: 7
+    past_action_window_size: 0
+    action_horizon: 8
+
+trainer:
+  freeze_modules: qwen_vl_interface,action_model
+  pretrained_checkpoint: ${oc.env:RAWVLA_ROOT}/starVLA/playground/Pretrained_models/StarVLA/Qwen3-VL-OFT-LIBERO-4in1/checkpoints/steps_50000_pytorch_model.pt
+  action_loss_weight: 0.2

@@ -1,0 +1,30 @@
+extends: ../base/rawvla_libero.yaml
+
+run_id: rawvla_pi05_libero
+
+datasets:
+  vla_data:
+    observation_stride: 5
+    action_horizon: 10
+    normalization: pi05_quantile
+    stats_path: ${oc.env:RAWVLA_ROOT}/openpi_converted_protocol/pi05_libero_starvla/bfloat16/assets/physical-intelligence/libero/norm_stats.json
+
+framework:
+  name: PI05
+  precision: bfloat16
+  action_dim: 32
+  action_horizon: 10
+  max_state_dim: 32
+  discrete_state_input: false
+  max_token_len: 200
+  num_inference_steps: 10
+  tokenizer:
+    model_path: ${oc.env:RAWVLA_ROOT}/openpi_converted_protocol/paligemma_tokenizer.model
+    pad_state_value: -2.0
+  paligemma:
+    model_name_or_path: ""
+
+trainer:
+  freeze_modules: vlm,action_head
+  pretrained_checkpoint: ${oc.env:RAWVLA_ROOT}/openpi_converted_protocol/pi05_libero_starvla/bfloat16/model.safetensors
+  action_loss_weight: 0.15

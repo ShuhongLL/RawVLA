@@ -22,7 +22,7 @@ environment: Python 3.10, PyTorch 2.6/CUDA 12.4,
 Transformers 4.57, MuJoCo 3.2.3, and robosuite 1.4.0.
 
 ```bash
-conda env create -f environment-starvla-libero.yml
+conda env create -f environment-libero.yml
 conda activate starvla-libero
 python -m pip install -e ./third_party/LIBERO
 python -m pip install --no-deps -e ./third_party/openvla-oft
