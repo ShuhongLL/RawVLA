@@ -1,5 +1,0 @@
-assets: /llm-serving-pvc/users/liujun/test/RawVLA/LIBERO-git/libero/libero/assets
-bddl_files: /llm-serving-pvc/users/liujun/test/RawVLA/LIBERO-git/libero/libero/bddl_files
-benchmark_root: /llm-serving-pvc/users/liujun/test/RawVLA/LIBERO-git/libero/libero
-datasets: /tmp/scratch-space/test/benchmarks/libero
-init_states: /llm-serving-pvc/users/liujun/test/RawVLA/LIBERO-git/libero/libero/init_files

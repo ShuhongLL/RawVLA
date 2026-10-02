@@ -2,7 +2,7 @@
 
 This directory is a clean publication snapshot. Before making it public:
 
-- [ ] Choose and add a root `LICENSE` (third-party submodules keep their own licenses).
+- [x] Add the root MIT `LICENSE` (third-party submodules keep their own licenses).
 - [ ] Push each project-maintained submodule branch before pushing `main`.
 - [ ] Confirm every pinned submodule commit is anonymously fetchable.
 - [ ] Run `python scripts/check_release.py --strict` in a fully initialized checkout.

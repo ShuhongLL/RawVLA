@@ -1,32 +1,49 @@
-# RoboTwin 2.0 local setup
+# RoboTwin 2.0 setup
 
-This workspace uses the RoboTwin 2.0 benchmark at `third_party/RoboTwin` and
-the StarVLA `Qwen3-VL-OFT-RoboTwin2-All` checkpoint. The benchmark checkout is
-tracked as a submodule on the `submodules/RoboTwin` branch, including the
-StarVLA checkpoint forwarding patch required by `script/eval_policy.py`.
+The pinned RoboTwin checkout lives at `third_party/RoboTwin` on the
+`submodules/RoboTwin` branch. It includes RAW-camera and StarVLA policy
+deployment integration.
 
-Local paths and Python executables are exported by the project `.bashrc`:
+## Install
+
+From the RAW-VLA repository root:
 
 ```bash
-source ./.bashrc
-robotwin-activate
+git submodule update --init third_party/RoboTwin starVLA
+conda env create -f environment-robotwin2.yml
+conda activate robotwin
+ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 ```
 
-The required benchmark assets are installed under `third_party/RoboTwin/assets`:
-`background_texture`, `embodiments`, and `objects`.
+The installer installs the pinned SAPIEN/MPLib stack, builds CuRobo 0.7.8, and
+applies the compatibility patches expected by the RoboTwin checkout. Download
+the benchmark assets using the instructions in `third_party/RoboTwin` before
+running an episode.
 
-The local environment is `.conda-envs/robotwin2`. It uses Python 3.10,
-CUDA 13 nightly PyTorch for B300 support, SAPIEN 3.0.0b1, MPlib 0.2.1, and
-CuRobo 0.7.8. The standard RoboTwin SAPIEN and MPlib compatibility patches
-are applied inside that local environment. Setuptools remains at 77 or newer
-because CUDA 13 nightly PyTorch requires it; CuRobo is installed with build
-isolation disabled.
-
-To start a future evaluation after the current LIBERO campaign finishes:
+## Validate
 
 ```bash
+VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
+  python scripts/check_environment.py robotwin --render
+python scripts/replay_robotwin2_clean_training.py --help
+python scripts/replay_robotwin2_paired_lighting_training.py --help
+```
+
+If the NVIDIA ICD lives elsewhere, set `VK_ICD_FILENAMES` to the path provided
+by the host driver installation.
+
+## Evaluate
+
+```bash
+export ROBOTWIN_CHECKPOINT=/absolute/path/to/checkpoint.pt
+export ROBOTWIN_PYTHON="$(command -v python)"
 scripts/robotwin2_eval.sh demo_clean all
 scripts/robotwin2_eval.sh demo_randomized all
 ```
 
-The setup process intentionally does not run a simulator or policy smoke test.
+The runners derive repository paths from their own location. Override
+`RAWVLA_ROOT`, `STARVLA_DIR`, or `ROBOTWIN_PATH` only when using checkouts
+outside the standard repository layout.
+
+See [ENVIRONMENTS.md](ENVIRONMENTS.md) for the complete dependency matrix and
+the recorded local validation results.

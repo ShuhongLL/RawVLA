@@ -36,17 +36,19 @@ branch and pinned commit are documented in [SUBMODULES.md](SUBMODULES.md).
 
 ## Environments
 
-The full system uses separate environments because StarVLA/LIBERO and RoboTwin
-have different simulator constraints:
+The full system uses separate environments because StarVLA/LIBERO, RoboTwin,
+FastWAM, OpenVLA-OFT, and GR00T have incompatible dependency stacks. Complete
+installation and validation commands are in [ENVIRONMENTS.md](ENVIRONMENTS.md).
+
+The two main environments are:
 
 ```bash
 conda env create -f environment-starvla-libero.yml
 conda env create -f environment-robotwin2.yml
 ```
 
-The exported environments under `benchmark/docs/env_repro/` are provided for
-exact reproduction. The smaller root environment files are the recommended
-starting point for a new machine.
+After installing StarVLA/LIBERO, generate the ignored machine-local LIBERO
+configuration with `python scripts/configure_libero.py`.
 
 ## Model smoke test
 
@@ -131,5 +133,5 @@ Before publishing, run:
 python scripts/check_release.py --strict
 ```
 
-The root project still needs an explicit license selected by the repository
-owner. Third-party submodules retain their own licenses.
+The root project is released under the MIT License. Third-party submodules
+retain their own licenses.

@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT=/llm-serving-pvc/users/liujun/test/RawVLA
-REPO="$ROOT/starVLA"
-PY="$ROOT/conda/envs/starvla-libero/bin/python"
-CKPT_ROOT=/tmp/scratch-space/test/checkpoints
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="${RAWVLA_ROOT:-$SCRIPT_DIR}"
+REPO="${STARVLA_ROOT:-$ROOT/starVLA}"
+PY="${STARVLA_PYTHON:-python}"
+CKPT_ROOT="${CKPT_ROOT:-$ROOT/starVLA/playground/Pretrained_models}"
 BASE="$CKPT_ROOT/base"
 STAR="$CKPT_ROOT/StarVLA"
-OPENPI="$CKPT_ROOT/tenstep/pi_model_starvla"
+OPENPI="${OPENPI_CONVERTED_ROOT:-$ROOT/openpi_converted_protocol}"
 OUT="${OUT:-$ROOT/artifacts/libero_float32_ev_zeroshot}"
 TRIALS="${NUM_TRIALS:-50}"
 JOBS_PER_GPU="${JOBS_PER_GPU:-3}"
@@ -39,7 +40,7 @@ wait_server() {
   local pid="$1" log="$2"
   for _ in $(seq 1 900); do
     kill -0 "$pid" 2>/dev/null || return 1
-    rg -q 'server running|server listening' "$log" 2>/dev/null && return 0
+    grep -Eq 'server running|server listening' "$log" 2>/dev/null && return 0
     sleep 2
   done
   return 1

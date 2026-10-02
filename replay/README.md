@@ -4,6 +4,11 @@ Replay outputs are intentionally not stored in Git. By default they live under
 `benchmark_data/`, which is ignored. Every command below supports explicit
 input/output paths and should first be run with one episode or one worker.
 
+Install the StarVLA/LIBERO environment for LIBERO replay and the RoboTwin
+environment for RoboTwin replay by following [`ENVIRONMENTS.md`](../ENVIRONMENTS.md).
+The LIBERO HDF5 pipeline requires both `h5py` and `bddl`; run the environment
+checker before starting a long replay.
+
 ## Download source demonstrations
 
 Install the Hugging Face CLI and run:

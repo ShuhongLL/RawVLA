@@ -13,9 +13,9 @@ dependencies:
   - cmake
   - ninja
   - pip:
-      - --extra-index-url https://download.pytorch.org/whl/cu130
-      - torch==2.13.0+cu130
-      - torchvision==0.28.0+cu130
+      - --extra-index-url https://download.pytorch.org/whl/cu124
+      - torch==2.6.0+cu124
+      - torchvision==0.21.0+cu124
       - transforms3d==0.4.2
       - sapien==3.0.0b1
       - scipy==1.10.1
@@ -31,7 +31,7 @@ dependencies:
       - pydantic
       - zarr
       - huggingface_hub==0.25.0
-      - h5py
+      - h5py==3.16.0
       - pyglet<2
       - wandb
       - moviepy

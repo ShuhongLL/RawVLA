@@ -7,3 +7,5 @@ dependencies:
   - ffmpeg<8
   - cmake
   - ninja
+  - pip:
+      - uv>=0.9.8

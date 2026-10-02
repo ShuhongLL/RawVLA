@@ -21,7 +21,9 @@ REQUIRED = (
     "scripts/replay_libero_train_rawvla_light_npz.py",
     "scripts/replay_robotwin2_clean_training.py",
     "scripts/replay_robotwin2_paired_lighting_training.py",
+    "scripts/configure_libero.py",
     "configs/rawvla_qwen3_oft_libero.yaml",
+    "libero_config/config.yaml.example",
 )
 RUNTIME_SUFFIXES = {".py", ".sh"}
 SKIP_PARTS = {".git", "__pycache__"}
@@ -38,6 +40,8 @@ PRIVATE_PATTERNS = (
     re.compile(r"/home/"),
     re.compile(r"/mnt/"),
     re.compile(r"/RAW-VLA/"),
+    re.compile("/" + "llm-serving-pvc/"),
+    re.compile("/tmp/" + "scratch-space/"),
 )
 SECRET_PATTERNS = (
     re.compile(r"AKIA[0-9A-Z]{16}"),

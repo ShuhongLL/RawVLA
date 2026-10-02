@@ -7,3 +7,9 @@ dependencies:
   - ffmpeg
   - cmake
   - ninja
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu121
+      - torch==2.2.0+cu121
+      - torchvision==0.17.0+cu121
+      - torchaudio==2.2.0+cu121
+      - packaging
