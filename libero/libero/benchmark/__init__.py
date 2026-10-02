@@ -161,7 +161,10 @@ class Benchmark(abc.ABC):
             self.tasks[i].problem_folder,
             self.tasks[i].init_states_file,
         )
-        init_states = torch.load(init_states_path)
+        # LIBERO init-state files contain trusted NumPy arrays rather than a
+        # model state_dict. PyTorch 2.6+ defaults weights_only=True, which
+        # rejects this established benchmark file format.
+        init_states = torch.load(init_states_path, weights_only=False)
         return init_states
 
     def set_task_embs(self, task_embs):
