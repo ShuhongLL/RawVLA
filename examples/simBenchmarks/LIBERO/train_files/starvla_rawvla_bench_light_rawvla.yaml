@@ -1,0 +1,107 @@
+run_id: starvla_rawvla_light_rawvla
+run_root_dir: playground/Checkpoints
+seed: 42
+wandb_entity: your_wandb_entity
+wandb_project: rawvla_bench_light
+is_debug: false
+version_id: "0.21"
+
+framework:
+  name: QwenGR00T
+  raw_frontend:
+    name: rawvla
+    source_key: raw_burst_float32
+    input_format: rgb_raw
+    trainable: true
+    burst_frames: 6
+    rnn_frames: 6
+    spatial_width: 32
+    hist_bins: 64
+    state_dim: 128
+    luma_state_dim: 64
+    fft_patch_size: 32
+    fft_stride: 16
+    burst_denoise_eta: 0.5
+    use_local_color: false
+    use_local_tone: false
+    split_luma_chroma_condition: true
+    luminance_weights: [1.0, 1.0, 1.0]
+    luma_spatial_input: luma
+    fixed_update_alpha: 1.0
+    max_exposure_ev: 6.0
+    exposure_target: 0.48
+    exposure_loss_weight: 0.01
+    exposure_loss_type: two_sided_l1
+  qwenvl:
+    base_vlm: ./playground/Pretrained_models/Qwen3-VL-4B-Instruct
+    attn_implementation: flash_attention_2
+    vl_hidden_dim: 2048
+  action_model:
+    action_dim: 7
+    state_dim: 7
+    action_horizon: 8
+
+datasets:
+  vlm_data:
+    dataset_py: vlm_datasets
+    dataformat: llava_json
+    dataset_use: sharegpt4v_coco
+    eval_dataset: sharegpt4v_coco
+    data_flatten: false
+    base_interval: 2
+    max_pixels: 307200
+    min_pixels: 784
+    model_max_length: 2048
+    model_type: qwen2.5vl
+    per_device_batch_size: 4
+
+  vla_data:
+    dataset_py: lerobot_datasets
+    data_root_dir: playground/Datasets/LEROBOT_LIBERO_DATA
+    data_mix: libero_all
+    action_type: delta_qpos
+    sequential_step_sampling: false
+    CoT_prompt: "Your task is {instruction}. To identify the key objects for your task. Locate their bounding boxes in [x1,y1,x2,y2] format."
+    per_device_batch_size: 16
+    load_all_data_for_training: true
+    video_backend: torchvision_av
+    rawvla_light:
+      enabled: true
+      seed: 20260813
+      domains: [ExtremeLow, Low, Normal, Over, ExtremeOver]
+      representation: raw
+      output_key: raw_burst_float32
+      burst_frames: 6
+      cache_root: playground/Datasets/RAWVLA_BENCH/libero/rawvla_light_train_raw_npz_action_xmlfix_20260816T0839Z
+      dataset_version: action_xmlfix_20260816T0839Z
+      cache_variant_index: 0
+      cache_lru_size: 8
+
+trainer:
+  max_train_steps: 100000
+  num_warmup_steps: 5000
+  save_interval: 5000
+  eval_interval: 100
+  learning_rate:
+    base: 2.5e-05
+    qwen_vl_interface: 1.0e-05
+    action_model: 1.0e-04
+    raw_frontend: 1.0e-04
+  lr_scheduler_type: cosine_with_min_lr
+  scheduler_specific_kwargs:
+    min_lr: 1.0e-06
+  freeze_modules: 'qwen_vl_interface,action_model'
+  max_grad_norm: 1.0
+  weight_decay: 0.0
+  logging_frequency: 10
+  gradient_clipping: 1.0
+  gradient_accumulation_steps: 4
+  gradient_checkpointing: true
+
+  optimizer:
+    name: AdamW
+    betas: [0.9, 0.95]
+    eps: 1.0e-08
+    weight_decay: 1.0e-08
+
+  save_format: pt
