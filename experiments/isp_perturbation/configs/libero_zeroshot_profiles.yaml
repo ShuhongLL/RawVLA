@@ -1,30 +1,29 @@
 defaults:
   submit_info: submit_info.yaml
   data_root: /path/to/RAW-VLA
-  result_root: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
+  result_root: /path/to/RAW-VLA/results/libero-bitdepth-zeroshot
   trials: 50
   suites:
     - libero_spatial
     - libero_object
     - libero_goal
     - libero_10
+  bits: [6, 5, 4, 3, 2]
   gpu_type: NVIDIA-L4
   family: ml.gni3
   priority: 6
 
 profiles:
   qwen3_oft_l4:
-    description: "Qwen3-VL-OFT chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    description: "Qwen3-VL-OFT LIBERO zero-shot. Verified by r36: all six b4/b2 gaps completed."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_oomfix_20260801T1601Z
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
     memory_gib: 96
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
       RAWVLA_QWEN_SHARD: "1"
       RAWVLA_QWEN_DEVICE_MAP: balanced_low_0
       RAWVLA_QWEN_MAX_MEMORY: "0:2GiB,1:22GiB"
@@ -36,10 +35,10 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   qwen3_oft_h20:
-    description: "Qwen3-VL-OFT chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
+    description: "Qwen3-VL-OFT LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_oomfix_20260801T1601Z
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -51,8 +50,6 @@ profiles:
     memory_gib: 1785
     rdma_eni_count: 8
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
       RAWVLA_GROUP_RETRIES: "1"
       RAWVLA_GROUP_RETRY_SLEEP: "45"
       RAWVLA_SERVER_CLEANUP_GRACE: "30"
@@ -60,17 +57,15 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   qwen3_pi_l4:
-    description: "Qwen3-VL-PI chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    description: "Qwen3-VL-PI LIBERO zero-shot. Verified by r40: PI resumes and advances without illegal-memory-access."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_pi_noearlycache_20260802T0144Z
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
     memory_gib: 160
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
       RAWVLA_QWEN_SHARD: "1"
       RAWVLA_QWEN_DEVICE_MAP: balanced_low_0
       RAWVLA_QWEN_MAX_MEMORY: "0:2GiB,1:18GiB,2:18GiB"
@@ -82,10 +77,10 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   qwen3_pi_h20:
-    description: "Qwen3-VL-PI chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
+    description: "Qwen3-VL-PI LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_pi_noearlycache_20260802T0144Z
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -97,8 +92,6 @@ profiles:
     memory_gib: 1785
     rdma_eni_count: 8
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
       RAWVLA_GROUP_RETRIES: "1"
       RAWVLA_GROUP_RETRY_SLEEP: "45"
       RAWVLA_SERVER_CLEANUP_GRACE: "30"
@@ -106,17 +99,16 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   wm4a_cosmo_l4:
-    description: "WM4A CosmoPredict chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    description: "WM4A CosmoPredict LIBERO zero-shot. Verified by r32: 2xL4 with cleanup/retry."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
     memory_gib: 96
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-bitdepth-zeroshot
       RAWVLA_WM_SHARD: "1"
       RAWVLA_WM_SHARD_DEVICES: "0,1"
       RAWVLA_WM_BLOCK_DEVICES: "0,1"
@@ -127,10 +119,10 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   wm4a_cosmo_h20:
-    description: "WM4A CosmoPredict chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
+    description: "WM4A CosmoPredict LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -142,25 +134,23 @@ profiles:
     memory_gib: 1785
     rdma_eni_count: 8
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-bitdepth-zeroshot
       RAWVLA_GROUP_RETRIES: "1"
       RAWVLA_GROUP_RETRY_SLEEP: "45"
       RAWVLA_SERVER_CLEANUP_GRACE: "30"
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   wm4a_wan_l4:
-    description: "WM4A Wan2.2 chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
+    description: "WM4A Wan2.2 LIBERO zero-shot. Verified by r33: 3xL4 with cleanup/retry."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
     memory_gib: 128
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-bitdepth-zeroshot
       RAWVLA_WM_SHARD: "1"
       RAWVLA_WM_SHARD_DEVICES: "0,1,2"
       RAWVLA_WM_BLOCK_DEVICES: "0,1,2"
@@ -171,10 +161,10 @@ profiles:
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
 
   wm4a_wan_h20:
-    description: "WM4A Wan2.2 chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
+    description: "WM4A Wan2.2 LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -186,43 +176,9 @@ profiles:
     memory_gib: 1785
     rdma_eni_count: 8
     env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
+      RESULT_ROOT: /path/to/RAW-VLA/results/libero-bitdepth-zeroshot
       RAWVLA_GROUP_RETRIES: "1"
       RAWVLA_GROUP_RETRY_SLEEP: "45"
       RAWVLA_SERVER_CLEANUP_GRACE: "30"
       PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
-
-  pi0_l4:
-    description: "PI0 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
-    models:
-      - PI0
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
-    gpu_count: 1
-    gpu_visible: "0"
-    cpu: 16
-    memory_gib: 64
-    env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
-      RAWVLA_GROUP_RETRIES: "1"
-      RAWVLA_GROUP_RETRY_SLEEP: "45"
-      RAWVLA_SERVER_CLEANUP_GRACE: "30"
-      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
-
-  pi05_l4:
-    description: "PI0.5 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
-    models:
-      - PI05
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
-    gpu_count: 1
-    gpu_visible: "0"
-    cpu: 16
-    memory_gib: 64
-    env:
-      RESULT_ROOT: /path/to/RAW-VLA/results/libero-chromatic-zeroshot
-      RAWVLA_FORCE_IMAGE_PYTHON: "1"
-      RAWVLA_GROUP_RETRIES: "1"
-      RAWVLA_GROUP_RETRY_SLEEP: "45"
-      RAWVLA_SERVER_CLEANUP_GRACE: "30"
-      PYTORCH_CUDA_ALLOC_CONF: expandable_segments:True
+# Legacy zero-shot ISP perturbation profiles; not part of RAWVLA-Bench.

@@ -11,13 +11,15 @@ from __future__ import annotations
 import argparse
 import os
 from pathlib import Path
+import sys
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(os.environ.get("STARVLA_ROOT", REPO_ROOT / "starVLA")).expanduser().resolve()
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from deployment.model_server.policy_norm_processor import PolicyNormProcessor
 from starVLA.model.framework.share_tools import read_mode_config
-
-
-REPO_ROOT = Path(__file__).resolve().parent
-ROOT = Path(os.environ.get("STARVLA_ROOT", REPO_ROOT / "starVLA")).expanduser().resolve()
 CHECKPOINTS = [
     ROOT / "playground/Pretrained_models/StarVLA/Qwen2.5-VL-OFT-LIBERO-4in1/checkpoints/steps_30000_pytorch_model.pt",
     ROOT / "playground/Pretrained_models/StarVLA/Qwen2.5-VL-FAST-LIBERO-4in1/checkpoints/steps_30000_pytorch_model.pt",

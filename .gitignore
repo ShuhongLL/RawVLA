@@ -50,9 +50,14 @@ tensorboard/
 # Training, evaluation, and generated outputs
 artifacts/
 results/
+!experiments/isp_perturbation/results/
+!experiments/isp_perturbation/results/*.md
 runs/
 outputs/
 checkpoints/
+!tools/checkpoints/
+!tools/checkpoints/*.py
+!tools/checkpoints/README.md
 smoke_output*/
 test_output*/
 render_output*/

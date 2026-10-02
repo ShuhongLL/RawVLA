@@ -120,3 +120,4 @@ metrics_to_log:
   - mean_luminance_delta
   - success_rate
   - num_trials
+# Synthetic tonal perturbation settings; not part of RAWVLA-Bench.

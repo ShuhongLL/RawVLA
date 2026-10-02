@@ -649,7 +649,7 @@ IMAGE_MODE=rawvla_bench \
 RAWVLA_BENCH_REPRESENTATION=raw \
 LIBERO_MODELS='Qwen3-VL-OFT-LIBERO-4in1' \
 RAW_FRONTEND_EVAL_DRY_RUN=1 \
-bash "$RAWVLA_ROOT/run_libero_zeroshot_all.sh"
+bash "$RAWVLA_ROOT/benchmark/rawvla-bench/scripts/run_libero_models.sh"
 ```
 
 现有 runner 的 `frontend_checkpoint_for()` 按固定目录名查找 checkpoint。对 ablation，应扩展 runner 接受显式变量，例如：

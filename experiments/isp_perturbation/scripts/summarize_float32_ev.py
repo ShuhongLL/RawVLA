@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Summarize the legacy synthetic float32 EV perturbation matrix."""
 import argparse
 import json
 import os

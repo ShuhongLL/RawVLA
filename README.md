@@ -10,15 +10,18 @@ evaluation adapters, and the replay code used to produce training trajectories.
 ```text
 baselines/rawvla/          RAW-VLA model and architecture notes
 benchmark/rawvla-bench/   RAW formation, lighting domains, and frozen manifests
+experiments/isp_perturbation/  legacy synthetic ISP perturbation studies
+experiments/real_robot/    physical-robot integration entry points
 starVLA/                   StarVLA integration (submodule)
 LIBERO-git/                LIBERO integration (submodule)
 third_party/RoboTwin/      RoboTwin 2.0 integration (submodule)
 third_party/openvla-oft/   OpenVLA-OFT dependency (submodule)
 third_party/FastWAM/       FastWAM integration (submodule)
 third_party/Isaac-GR00T/   GR00T dependency (submodule)
-scripts/                   training, evaluation, replay, and release checks
+scripts/                   shared training, replay, setup, and validation tools
 replay/                    replay documentation and small manifests
 finetune/calibration/      default-ISP calibration utilities
+tools/checkpoints/         public checkpoint download and validation helpers
 ```
 
 ## Clone
@@ -68,9 +71,9 @@ concatenated into the decoder twice.
 Download the public StarVLA LIBERO checkpoints and their base models with:
 
 ```bash
-python download_starvla_libero.py
+python tools/checkpoints/download_starvla_libero.py
 # Add --all for every listed model family.
-python test_starvla_libero.py
+python tools/checkpoints/validate_starvla_libero.py
 ```
 
 Set `STARVLA_ROOT=/custom/path/to/starVLA` when the StarVLA checkout is not at
@@ -123,11 +126,19 @@ bash scripts/run_robotwin2_starvla_rgb_eval.sh smoke
 Run scripts with `--help` where supported and start with one task/episode before
 launching full benchmark matrices.
 
-## Public-release policy
+Synthetic EV, bit-depth, chromatic, and tonal studies are intentionally kept
+separate from RAWVLA-Bench under
+[`experiments/isp_perturbation`](experiments/isp_perturbation/README.md).
+Physical-robot entry points are documented under
+[`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and
+LIBERO remain simulator integrations.
 
-Do not commit datasets, checkpoints, generated media, result ledgers, cluster
-submission credentials, or machine-specific environment activation scripts.
-Before publishing, run:
+## Repository validation
+
+The default `.gitignore` excludes generated datasets, checkpoints, media, and
+run outputs so routine experiments do not accidentally stage large artifacts.
+Repository owners can explicitly add selected release artifacts when desired.
+To validate source paths, syntax, secrets, and initialized submodules, run:
 
 ```bash
 python scripts/check_release.py --strict

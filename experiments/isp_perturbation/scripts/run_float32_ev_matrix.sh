@@ -2,27 +2,38 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${RAWVLA_ROOT:-$SCRIPT_DIR}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd -- "$SCRIPT_DIR/../../.." && pwd)}}"
+
+if [[ "${1:-}" == "--help" ]]; then
+  cat <<'EOF'
+Usage: run_float32_ev_matrix.sh
+
+Runs the legacy synthetic float32 EV perturbation matrix. Override models,
+suites, EV values, representations, GPU IDs, checkpoints, output paths, trial
+count, and concurrency with environment variables documented in
+experiments/isp_perturbation/README.md.
+EOF
+  exit 0
+fi
 REPO="${STARVLA_ROOT:-$ROOT/starVLA}"
 PY="${STARVLA_PYTHON:-python}"
 CKPT_ROOT="${CKPT_ROOT:-$ROOT/starVLA/playground/Pretrained_models}"
 BASE="$CKPT_ROOT/base"
 STAR="$CKPT_ROOT/StarVLA"
 OPENPI="${OPENPI_CONVERTED_ROOT:-$ROOT/openpi_converted_protocol}"
-OUT="${OUT:-$ROOT/artifacts/libero_float32_ev_zeroshot}"
+OUT="${OUT:-$ROOT/results/isp-perturbation/libero-float32-ev}"
 TRIALS="${NUM_TRIALS:-50}"
 JOBS_PER_GPU="${JOBS_PER_GPU:-3}"
-SUITES=(libero_spatial libero_object libero_goal libero_10)
-MODELS=(
-  Qwen3-VL-OFT-LIBERO-4in1
-  Qwen3-VL-PI-LIBERO-4in1
-  WM4A-CosmoPredict-GR00T-LIBERO-4in1
-  WM4A-Wan2d2-OFT-LIBERO-4in1
-  PI0
-  PI05
-)
-EVS=(-8 -7 -6 3)
-REPS=(raw_direct raw_recovered rgb_direct rgb_recovered)
+read -r -a GPU_LIST <<<"${GPU_IDS:-0 1 2 3 4 5 6 7}"
+read -r -a SUITES <<<"${LIBERO_SUITES:-libero_spatial libero_object libero_goal libero_10}"
+read -r -a MODELS <<<"${LIBERO_MODELS:-Qwen3-VL-OFT-LIBERO-4in1 Qwen3-VL-PI-LIBERO-4in1 WM4A-CosmoPredict-GR00T-LIBERO-4in1 WM4A-Wan2d2-OFT-LIBERO-4in1 PI0 PI05}"
+read -r -a EVS <<<"${EV_VALUES:--8 -7 -6 3}"
+read -r -a REPS <<<"${EV_REPRESENTATIONS:-raw_direct raw_recovered rgb_direct rgb_recovered}"
+
+if (( ${#GPU_LIST[@]} == 0 || JOBS_PER_GPU < 1 )); then
+  echo "GPU_IDS must not be empty and JOBS_PER_GPU must be positive" >&2
+  exit 2
+fi
 
 mkdir -p "$OUT/control"
 cd "$REPO"
@@ -154,17 +165,17 @@ done
 
 worker_loop() {
   local worker="$1" worker_count="$2" idx gpu
-  gpu=$((worker % 8))
+  gpu="${GPU_LIST[$((worker % ${#GPU_LIST[@]}))]}"
   for ((idx=worker; idx<${#jobs[@]}; idx+=worker_count)); do
     run_job "${jobs[$idx]}" "$gpu" "$worker"
   done
 }
 
 echo "$$" >"$OUT/control/master.pid"
-worker_count=$((8 * JOBS_PER_GPU))
-printf '[%s] scheduler start: %s jobs, 8 GPUs, %s workers, %s trials/task\n' \
-  "$(date -Is)" "${#jobs[@]}" "$worker_count" "$TRIALS" | tee -a "$OUT/control/master.log"
-"$PY" "$ROOT/summarize_libero_float32_ev.py" "$OUT" --watch >"$OUT/control/summary.log" 2>&1 &
+worker_count=$((${#GPU_LIST[@]} * JOBS_PER_GPU))
+printf '[%s] scheduler start: %s jobs, %s GPUs, %s workers, %s trials/task\n' \
+  "$(date -Is)" "${#jobs[@]}" "${#GPU_LIST[@]}" "$worker_count" "$TRIALS" | tee -a "$OUT/control/master.log"
+"$PY" "$SCRIPT_DIR/summarize_float32_ev.py" "$OUT" --watch >"$OUT/control/summary.log" 2>&1 &
 summary_pid=$!
 trap 'kill "$summary_pid" 2>/dev/null || true' EXIT
 pids=()
@@ -174,5 +185,5 @@ for worker in $(seq 0 $((worker_count - 1))); do
 done
 wait "${pids[@]}"
 kill "$summary_pid" 2>/dev/null || true
-"$PY" "$ROOT/summarize_libero_float32_ev.py" "$OUT"
+"$PY" "$SCRIPT_DIR/summarize_float32_ev.py" "$OUT"
 printf '[%s] scheduler finished\n' "$(date -Is)" | tee -a "$OUT/control/master.log"

@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-GROUP_FILE="${1:?usage: run_libero_bitdepth_group.sh SETTINGS_TSV}"
+if [[ "${1:-}" == "--help" ]]; then
+  echo "Usage: run_bitdepth_group.sh SETTINGS_TSV"
+  exit 0
+fi
+
+GROUP_FILE="${1:?usage: run_bitdepth_group.sh SETTINGS_TSV}"
 BASE_PORT="${BASE_PORT:-18000}"
 GPU="${GPU:-0}"
 export GPU
@@ -15,7 +20,7 @@ while IFS=$'\t' read -r model suite bits; do
   attempt=1
   while :; do
     set +e
-    bash "$(dirname "$0")/run_libero_bitdepth_setting.sh" "$model" "$suite" "$bits"
+    bash "$(dirname "$0")/run_bitdepth_setting.sh" "$model" "$suite" "$bits"
     rc=$?
     set -e
     if [[ "$rc" -eq 0 ]]; then

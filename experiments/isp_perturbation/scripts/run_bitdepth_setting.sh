@@ -4,36 +4,37 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  run_libero_chromatic_condition.sh MODEL FAMILY SETTING THETA_DEG [TRIALS]
+  run_bitdepth_setting.sh MODEL SUITE BITS [TRIALS]
 
-Runs one chromatic condition for one model. The server is started once, then all
-selected LIBERO suites are evaluated sequentially with independent resume files.
+Runs one bit-depth setting on one machine:
+  1. ev_float32/raw_direct      (unprocess -> raw float32)
+  2. ev_float32/rgb_recovered   (unprocess -> reprocess RGB float32)
 
-Examples:
-  run_libero_chromatic_condition.sh Qwen3-VL-OFT-LIBERO-4in1 uv_whitepoint uv_r0p075 90
-  run_libero_chromatic_condition.sh PI05 color_relation rel_s5p5 225 50
+Each phase has independent logs, resume ledger, and result JSON.
 EOF
 }
 
-if [[ $# -lt 4 || $# -gt 5 ]]; then
+if [[ "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
+if [[ $# -lt 3 || $# -gt 4 ]]; then
   usage
   exit 2
 fi
 
 MODEL="$1"
-CHROMATIC_FAMILY="$2"
-CHROMATIC_SETTING="$3"
-CHROMATIC_THETA_DEG="$4"
-TRIALS="${5:-${NUM_TRIALS:-50}}"
+SUITE="$2"
+BITS="$3"
+TRIALS="${4:-${NUM_TRIALS:-50}}"
 MAX_TASKS="${MAX_TASKS:--1}"
-TASK_CHUNK_SIZE="${TASK_CHUNK_SIZE:-0}"
-TASKS_PER_SUITE="${TASKS_PER_SUITE:-10}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd "$SCRIPT_DIR/../../.." && pwd)}}"
 DATA_ROOT="${DATA_ROOT:-$ROOT}"
 REPO="${REPO:-$ROOT/starVLA}"
-RESULT_ROOT="${RESULT_ROOT:-$DATA_ROOT/results/libero-chromatic-zeroshot}"
+RESULT_ROOT="${RESULT_ROOT:-$DATA_ROOT/results/libero-bitdepth-zeroshot}"
 PRETRAINED_ROOT="${PRETRAINED_ROOT:-$DATA_ROOT/starVLA/playground/Pretrained_models}"
 STAR="${STAR:-$PRETRAINED_ROOT/StarVLA}"
 BASE="${BASE:-$PRETRAINED_ROOT}"
@@ -48,40 +49,15 @@ RAWVLA_ACTIVATE="${RAWVLA_ACTIVATE:-}"
 GPU="${GPU:-0}"
 PORT="${PORT:-18000}"
 SERVER_WAIT_ATTEMPTS="${SERVER_WAIT_ATTEMPTS:-900}"
+EXPOSURE_EV="${EXPOSURE_EV:-0.0}"
 RESIZE_SIZE="${RESIZE_SIZE:-224}"
 SEED="${SEED:-7}"
-SUITES_CSV="${SUITES:-libero_spatial,libero_object,libero_goal,libero_10}"
-
-IFS=',' read -r -a SUITE_LIST <<<"$SUITES_CSV"
-
-case "$CHROMATIC_FAMILY" in
-  uv_whitepoint)
-    case "$CHROMATIC_SETTING" in uv_r0p060|uv_r0p075) ;; *) echo "Unsupported uv setting: $CHROMATIC_SETTING" >&2; exit 2 ;; esac
-    ;;
-  color_relation)
-    case "$CHROMATIC_SETTING" in rel_s4p5|rel_s5p5) ;; *) echo "Unsupported relation setting: $CHROMATIC_SETTING" >&2; exit 2 ;; esac
-    ;;
-  *) echo "Unsupported chromatic family: $CHROMATIC_FAMILY" >&2; exit 2 ;;
-esac
-
-case "$CHROMATIC_THETA_DEG" in
-  0|45|90|135|180|225|270|315) ;;
-  *) echo "CHROMATIC_THETA_DEG must be one of 0,45,90,135,180,225,270,315; got $CHROMATIC_THETA_DEG" >&2; exit 2 ;;
-esac
 
 if [[ -z "${PY:-}" && -f "$RAWVLA_ACTIVATE" ]]; then
+  # The Volc runtime image can be older than the packed conda env; this helper
+  # selects a compatible Python path and overlays the missing Python packages.
   # shellcheck disable=SC1090
   source "$RAWVLA_ACTIVATE"
-fi
-
-if [[ "${RAWVLA_FORCE_IMAGE_PYTHON:-0}" == "1" && -x /usr/local/python3.10.12/bin/python3 ]]; then
-  export PATH="/usr/local/python3.10.12/bin:$PATH"
-  python() { /usr/local/python3.10.12/bin/python3 "$@"; }
-  export -f python
-  export RAWVLA_EXTRA_SITE="${RAWVLA_EXTRA_SITE:-}"
-  unset CONDA_PREFIX
-  unset CONDA_DEFAULT_ENV
-  export RAWVLA_PYTHON_MODE=image-python
 fi
 
 resolve_python() {
@@ -103,15 +79,28 @@ resolve_python() {
   if [[ -n "${CONDA_PREFIX:-}" ]]; then
     candidates+=("$CONDA_PREFIX/bin/python")
   fi
+  if [[ -n "${CONDA_EXE:-}" ]]; then
+    local conda_base
+    conda_base="$(dirname "$(dirname "$CONDA_EXE")")"
+    candidates+=("$conda_base/envs/starVLA/bin/python" "$conda_base/envs/starvla/bin/python")
+  fi
   candidates+=(
+    "$HOME/anaconda3/envs/starVLA/bin/python"
+    "$HOME/anaconda3/envs/starvla/bin/python"
+    "$HOME/miniconda3/envs/starVLA/bin/python"
+    "$HOME/miniconda3/envs/starvla/bin/python"
+    "$HOME/miniforge3/envs/starVLA/bin/python"
+    "$HOME/miniforge3/envs/starvla/bin/python"
     "/opt/conda/envs/starVLA/bin/python"
     "/usr/local/bin/python"
     "/usr/bin/python3"
   )
+
   if [[ -n "${RAWVLA_PYTHON_MODE:-}" ]] && command -v python >/dev/null 2>&1; then
     printf '%s\n' python
     return 0
   fi
+
   local candidate
   for candidate in "${candidates[@]}"; do
     if [[ -x "$candidate" ]]; then
@@ -119,10 +108,29 @@ resolve_python() {
       return 0
     fi
   done
-  command -v python || command -v python3
+  if command -v python >/dev/null 2>&1; then
+    command -v python
+    return 0
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    command -v python3
+    return 0
+  fi
+  echo "Could not find a Python executable; set PY or STARVLA_PYTHON." >&2
+  return 1
 }
 
 PY="$(resolve_python)"
+echo "[$(date -Is)] python=$PY"
+
+case "$SUITE" in
+  libero_spatial|libero_object|libero_goal|libero_10) ;;
+  *) echo "Unsupported suite: $SUITE" >&2; exit 2 ;;
+esac
+case "$BITS" in
+  2|3|4|5|6) ;;
+  *) echo "BITS must be one of 6, 5, 4, 3, 2; got $BITS" >&2; exit 2 ;;
+esac
 
 checkpoint_for() {
   case "$1" in
@@ -159,17 +167,15 @@ safe_name() {
 
 CKPT="$(checkpoint_for "$MODEL")"
 MODEL_SAFE="$(safe_name "$MODEL")"
-THETA_PAD="$(printf '%03d' "$CHROMATIC_THETA_DEG")"
-CONDITION_DIR="$RESULT_ROOT/$MODEL_SAFE/$CHROMATIC_FAMILY/$CHROMATIC_SETTING/theta_${THETA_PAD}"
+SETTING_DIR="$RESULT_ROOT/$MODEL_SAFE/$SUITE/bits_${BITS}"
 CONTROL_DIR="$RESULT_ROOT/control"
-SERVER_LOG="$CONDITION_DIR/server.log"
-JOB_LOG="$CONDITION_DIR/job.log"
-mkdir -p "$CONDITION_DIR" "$CONTROL_DIR"
+SERVER_LOG="$SETTING_DIR/server.log"
+JOB_LOG="$SETTING_DIR/job.log"
+mkdir -p "$SETTING_DIR" "$CONTROL_DIR"
 
 exec > >(tee -a "$JOB_LOG") 2>&1
 
-echo "[$(date -Is)] chromatic condition start model=$MODEL family=$CHROMATIC_FAMILY setting=$CHROMATIC_SETTING theta=$CHROMATIC_THETA_DEG trials=$TRIALS suites=$SUITES_CSV gpu=$GPU port=$PORT"
-echo "[$(date -Is)] python=$PY"
+echo "[$(date -Is)] setting start model=$MODEL suite=$SUITE bits=$BITS trials=$TRIALS max_tasks=$MAX_TASKS gpu=$GPU port=$PORT"
 echo "[$(date -Is)] checkpoint=$CKPT"
 if [[ ! -f "$CKPT" ]]; then
   echo "Missing checkpoint: $CKPT" >&2
@@ -218,17 +224,9 @@ PY
 fi
 echo "[$(date -Is)] LIBERO_CONFIG_PATH=$LIBERO_CONFIG_PATH"
 
-all_done=1
-for suite in "${SUITE_LIST[@]}"; do
-  suite="${suite//[[:space:]]/}"
-  [[ -z "$suite" ]] && continue
-  if [[ ! -f "$CONDITION_DIR/$suite/job.done" ]]; then
-    all_done=0
-  fi
-done
-if [[ "$all_done" -eq 1 ]]; then
-  echo "[$(date -Is)] condition already complete; refreshing summary only"
-  "$PY" "$SCRIPT_DIR/summarize_libero_chromatic.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt" || true
+if [[ -f "$SETTING_DIR/raw/job.done" && -f "$SETTING_DIR/rgb/job.done" ]]; then
+  echo "[$(date -Is)] setting already complete; refreshing summary only"
+  "$PY" "$SCRIPT_DIR/summarize_runs.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt"
   exit 0
 fi
 
@@ -247,14 +245,17 @@ kill_server_tree() {
   local pid="${1:-}"
   [[ -z "$pid" ]] && return 0
   kill -0 "$pid" 2>/dev/null || return 0
+
   echo "[$(date -Is)] stopping server pid=$pid"
   pkill -TERM -P "$pid" 2>/dev/null || true
   kill "$pid" 2>/dev/null || true
+
   local grace="${RAWVLA_SERVER_CLEANUP_GRACE:-30}"
   for _ in $(seq 1 "$grace"); do
     kill -0 "$pid" 2>/dev/null || return 0
     sleep 1
   done
+
   echo "[$(date -Is)] force stopping server pid=$pid"
   pkill -KILL -P "$pid" 2>/dev/null || true
   kill -KILL "$pid" 2>/dev/null || true
@@ -264,16 +265,16 @@ cleanup() {
   if [[ -n "$server_pid" ]]; then
     kill_server_tree "$server_pid"
     wait "$server_pid" 2>/dev/null || true
-    rm -f "$CONDITION_DIR/server.pid"
+    rm -f "$SETTING_DIR/server.pid"
     server_pid=""
   fi
 }
 trap cleanup EXIT INT TERM
 
 start_server() {
-  if [[ -f "$CONDITION_DIR/server.pid" ]]; then
-    kill_server_tree "$(cat "$CONDITION_DIR/server.pid" 2>/dev/null || true)"
-    rm -f "$CONDITION_DIR/server.pid"
+  if [[ -f "$SETTING_DIR/server.pid" ]]; then
+    kill_server_tree "$(cat "$SETTING_DIR/server.pid" 2>/dev/null || true)"
+    rm -f "$SETTING_DIR/server.pid"
   fi
   : >"$SERVER_LOG"
   if [[ "$MODEL" == "PI0" || "$MODEL" == "PI05" || "$MODEL" == "PI0.5" ]]; then
@@ -290,126 +291,61 @@ start_server() {
       "${overrides[@]}" >>"$SERVER_LOG" 2>&1 &
   fi
   server_pid=$!
-  echo "$server_pid" >"$CONDITION_DIR/server.pid"
+  echo "$server_pid" >"$SETTING_DIR/server.pid"
   wait_server "$server_pid" "$SERVER_LOG"
 }
 
-run_suite() {
-  local suite="$1"
-  local suite_dir="$CONDITION_DIR/$suite"
-  local eval_log="$suite_dir/eval.log"
-  local result_json="$suite_dir/result.json"
-  local resume="$suite_dir/episodes.jsonl"
-  mkdir -p "$suite_dir/tasks" "$suite_dir/videos"
-  if [[ -f "$suite_dir/job.done" ]]; then
-    echo "[$(date -Is)] skip completed suite=$suite"
+run_phase() {
+  local label="$1"
+  local representation="$2"
+  local phase_dir="$SETTING_DIR/$label"
+  local eval_log="$phase_dir/eval.log"
+  local result_json="$phase_dir/result.json"
+  local resume="$phase_dir/episodes.jsonl"
+  mkdir -p "$phase_dir/tasks" "$phase_dir/videos"
+  if [[ -f "$phase_dir/job.done" ]]; then
+    echo "[$(date -Is)] skip completed phase=$label"
     return 0
   fi
-  echo "[$(date -Is)] suite start suite=$suite family=$CHROMATIC_FAMILY setting=$CHROMATIC_SETTING theta=$CHROMATIC_THETA_DEG"
-  if [[ "$TASK_CHUNK_SIZE" -gt 0 ]]; then
-    local task_start=0
-    local task_end=0
-    while [[ "$task_start" -lt "$TASKS_PER_SUITE" ]]; do
-      task_end=$((task_start + TASK_CHUNK_SIZE))
-      if [[ "$task_end" -gt "$TASKS_PER_SUITE" ]]; then
-        task_end="$TASKS_PER_SUITE"
-      fi
-      echo "[$(date -Is)] suite chunk start suite=$suite task_start=$task_start task_end=$task_end"
-      if ! start_server; then
-        echo "[$(date -Is)] server failed to become ready; see $SERVER_LOG" >&2
-        return 1
-      fi
-      echo "[$(date -Is)] server ready for suite=$suite task_start=$task_start task_end=$task_end"
-      set +e
-      run_suite_eval "$suite" "$suite_dir" "$eval_log" "$result_json" "$resume" "$task_start" "$task_end"
-      local rc=$?
-      set -e
-      cleanup
-      if [[ "$rc" -ne 0 ]]; then
-        echo "[$(date -Is)] suite chunk failed suite=$suite task_start=$task_start task_end=$task_end rc=$rc"
-        return "$rc"
-      fi
-      echo "[$(date -Is)] suite chunk done suite=$suite task_start=$task_start task_end=$task_end"
-      task_start="$task_end"
-    done
-    touch "$suite_dir/job.done"
-    echo "[$(date -Is)] suite done suite=$suite"
-    return 0
-  fi
-  run_suite_eval "$suite" "$suite_dir" "$eval_log" "$result_json" "$resume" "" ""
-}
-
-run_suite_eval() {
-  local suite="$1"
-  local suite_dir="$2"
-  local eval_log="$3"
-  local result_json="$4"
-  local resume="$5"
-  local task_start="$6"
-  local task_end="$7"
-  local -a openpi_task_args=()
-  local -a native_task_args=()
-  if [[ -n "$task_start" && -n "$task_end" ]]; then
-    openpi_task_args=(--task-start "$task_start" --task-end "$task_end")
-    native_task_args=(--args.task-start "$task_start" --args.task-end "$task_end")
-  fi
+  echo "[$(date -Is)] phase start label=$label representation=$representation bits=$BITS"
   set +e
-  # Older bash/nounset combinations can treat an empty local array expansion as
-  # unbound. Disable nounset only while building the eval command line.
-  set +u
   if [[ "$MODEL" == "PI0" || "$MODEL" == "PI05" || "$MODEL" == "PI0.5" ]]; then
     local pi_model="$MODEL"
     [[ "$pi_model" == "PI0.5" ]] && pi_model="PI05"
     CUDA_VISIBLE_DEVICES="$GPU" "$PY" examples/simBenchmarks/LIBERO/eval_files/openpi/eval_starvla_openpi_client.py \
       --model "$pi_model" --model-source openpi --host 127.0.0.1 --port "$PORT" \
-      --task-suite "$suite" --num-trials "$TRIALS" --max-tasks "$MAX_TASKS" --resize-size "$RESIZE_SIZE" \
-      "${openpi_task_args[@]}" \
+      --task-suite "$SUITE" --num-trials "$TRIALS" --max-tasks "$MAX_TASKS" --resize-size "$RESIZE_SIZE" \
       --seed "$SEED" --result-json "$result_json" --resume-path "$resume" \
-      --image-mode chromatic --chromatic-family "$CHROMATIC_FAMILY" \
-      --chromatic-setting "$CHROMATIC_SETTING" --chromatic-theta-deg "$CHROMATIC_THETA_DEG" \
-      --image-quantize-bits 0 2>&1 | tee -a "$eval_log"
+      --image-mode ev_float32 --ev-representation "$representation" --exposure-ev "$EXPOSURE_EV" \
+      --image-quantize-bits "$BITS" 2>&1 | tee -a "$eval_log"
   else
     CUDA_VISIBLE_DEVICES="$GPU" "$PY" examples/simBenchmarks/LIBERO/eval_files/eval_libero.py \
       --args.pretrained-path "$CKPT" --args.host 127.0.0.1 --args.port "$PORT" \
-      --args.task-suite-name "$suite" --args.num-trials-per-task "$TRIALS" --args.max-tasks "$MAX_TASKS" \
-      "${native_task_args[@]}" \
-      --args.video-out-path "$suite_dir/videos" --args.resume-path "$resume" \
-      --args.task-log-dir "$suite_dir/tasks" --args.job-name "${MODEL}_${suite}_${CHROMATIC_FAMILY}_${CHROMATIC_SETTING}_t${THETA_PAD}" \
-      --args.image-mode chromatic --args.chromatic-family "$CHROMATIC_FAMILY" \
-      --args.chromatic-setting "$CHROMATIC_SETTING" --args.chromatic-theta-deg "$CHROMATIC_THETA_DEG" \
-      --args.image-quantize-bits 0 2>&1 | tee -a "$eval_log"
+      --args.task-suite-name "$SUITE" --args.num-trials-per-task "$TRIALS" --args.max-tasks "$MAX_TASKS" \
+      --args.video-out-path "$phase_dir/videos" --args.resume-path "$resume" \
+      --args.task-log-dir "$phase_dir/tasks" --args.job-name "${MODEL}_${SUITE}_${label}_bits${BITS}" \
+      --args.image-mode ev_float32 --args.ev-representation "$representation" \
+      --args.exposure-ev "$EXPOSURE_EV" --args.image-quantize-bits "$BITS" 2>&1 | tee -a "$eval_log"
   fi
   local rc=${PIPESTATUS[0]}
-  set -u
   set -e
-if [[ "$rc" -eq 0 ]]; then
-    if [[ "$TASK_CHUNK_SIZE" -le 0 ]]; then
-      touch "$suite_dir/job.done"
-      echo "[$(date -Is)] suite done suite=$suite"
-    fi
+  if [[ "$rc" -eq 0 ]]; then
+    touch "$phase_dir/job.done"
+    echo "[$(date -Is)] phase done label=$label"
   else
-    echo "[$(date -Is)] suite failed suite=$suite rc=$rc"
+    echo "[$(date -Is)] phase failed label=$label rc=$rc"
   fi
   return "$rc"
 }
 
-if [[ "$TASK_CHUNK_SIZE" -le 0 ]]; then
-  if ! start_server; then
-    echo "[$(date -Is)] server failed to become ready; see $SERVER_LOG" >&2
-    exit 1
-  fi
-  echo "[$(date -Is)] server ready"
+if ! start_server; then
+  echo "[$(date -Is)] server failed to become ready; see $SERVER_LOG" >&2
+  exit 1
 fi
+echo "[$(date -Is)] server ready"
 
-for suite in "${SUITE_LIST[@]}"; do
-  suite="${suite//[[:space:]]/}"
-  [[ -z "$suite" ]] && continue
-  case "$suite" in
-    libero_spatial|libero_object|libero_goal|libero_10) ;;
-    *) echo "Unsupported suite: $suite" >&2; exit 2 ;;
-  esac
-  run_suite "$suite"
-done
+run_phase raw raw_direct
+run_phase rgb rgb_recovered
 
-"$PY" "$SCRIPT_DIR/summarize_libero_chromatic.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt" || true
-echo "[$(date -Is)] chromatic condition finished"
+"$PY" "$SCRIPT_DIR/summarize_runs.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt"
+echo "[$(date -Is)] setting finished"

@@ -3,7 +3,7 @@
 
 Run with:
   conda activate starVLA
-  python download_starvla_libero.py
+  python tools/checkpoints/download_starvla_libero.py
 
 By default the script downloads only StarVLA/Qwen3-VL-PI-LIBERO-4in1 plus the
 base VLM referenced by its config.yaml. Pass --all to fetch every listed LIBERO
@@ -20,7 +20,7 @@ from pathlib import Path
 from huggingface_hub import hf_hub_download, hf_hub_url, get_hf_file_metadata, list_repo_files
 
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 ROOT = Path(os.environ.get("STARVLA_ROOT", REPO_ROOT / "starVLA")).expanduser().resolve()
 PRETRAINED = ROOT / "playground" / "Pretrained_models"
 

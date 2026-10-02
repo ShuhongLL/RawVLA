@@ -4,6 +4,9 @@ import pathlib
 import sys
 
 
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+
+
 def main(root: pathlib.Path) -> None:
     rows = []
     for model_dir in sorted(p for p in root.iterdir() if p.is_dir() and p.name != "control"):
@@ -50,4 +53,5 @@ def main(root: pathlib.Path) -> None:
 
 
 if __name__ == "__main__":
-    main(pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "log/libero_zeroshot"))
+    default_root = REPO_ROOT / "results" / "rawvla-bench-light-libero"
+    main(pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else default_root)

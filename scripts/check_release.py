@@ -17,6 +17,9 @@ REQUIRED = (
     "baselines/rawvla/rawvla.py",
     "baselines/rawvla/smoke_test.py",
     "benchmark/rawvla-bench/rawvla_bench/raw.py",
+    "benchmark/rawvla-bench/scripts/run_libero_models.sh",
+    "experiments/isp_perturbation/README.md",
+    "experiments/real_robot/README.md",
     "starVLA/starVLA/model/modules/raw_frontend/registry.py",
     "scripts/replay_libero_train_rawvla_light_npz.py",
     "scripts/replay_robotwin2_clean_training.py",
@@ -113,7 +116,14 @@ def main() -> int:
         if any(pattern.search(text) for pattern in SECRET_PATTERNS):
             errors.append(f"possible secret in {path.relative_to(ROOT)}")
 
-    python_roots = [ROOT / "baselines", ROOT / "benchmark" / "rawvla-bench", ROOT / "scripts", ROOT / "finetune"]
+    python_roots = [
+        ROOT / "baselines",
+        ROOT / "benchmark" / "rawvla-bench",
+        ROOT / "experiments",
+        ROOT / "scripts",
+        ROOT / "finetune",
+        ROOT / "tools",
+    ]
     for python_root in python_roots:
         if python_root.exists() and not compileall.compile_dir(python_root, quiet=1, force=True):
             errors.append(f"Python syntax check failed under {python_root.relative_to(ROOT)}")

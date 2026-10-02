@@ -141,7 +141,7 @@ index, and noise seed for each completed rollout.
 
 ## Evaluate Pluggable RAW Frontends
 
-`run_libero_zeroshot_all.sh` can compose each of the six LIBERO backbones with
+`scripts/run_libero_models.sh` can compose each of the six LIBERO backbones with
 one independently trained RAW frontend. The supported values are:
 
 | `RAW_FRONTEND` | Behavior |
@@ -183,5 +183,5 @@ RAW_FRONTEND=rawvla \
 IMAGE_MODE=rawvla_bench \
 RAWVLA_BENCH_REPRESENTATION=raw \
 RAW_FRONTEND_EVAL_DRY_RUN=1 \
-bash run_libero_zeroshot_all.sh
+bash benchmark/rawvla-bench/scripts/run_libero_models.sh
 ```

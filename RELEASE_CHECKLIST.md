@@ -1,6 +1,6 @@
 # Release checklist
 
-This directory is a clean publication snapshot. Before making it public:
+This checklist records validation steps for the repository owner:
 
 - [x] Add the root MIT `LICENSE` (third-party submodules keep their own licenses).
 - [ ] Push each project-maintained submodule branch before pushing `main`.

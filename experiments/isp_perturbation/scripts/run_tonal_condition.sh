@@ -4,13 +4,18 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  run_libero_tonal_condition.sh MODEL TONAL_SETTING TONAL_C [TRIALS]
+  run_tonal_condition.sh MODEL TONAL_SETTING TONAL_C [TRIALS]
 
 Runs one tonal-response condition for one model. The server is started once,
 then all selected LIBERO suites are evaluated sequentially with independent
 resume files.
 EOF
 }
+
+if [[ "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
 
 if [[ $# -lt 3 || $# -gt 4 ]]; then
   usage
@@ -26,7 +31,7 @@ TASK_CHUNK_SIZE="${TASK_CHUNK_SIZE:-0}"
 TASKS_PER_SUITE="${TASKS_PER_SUITE:-10}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd "$SCRIPT_DIR/../../.." && pwd)}}"
 DATA_ROOT="${DATA_ROOT:-$ROOT}"
 REPO="${REPO:-$ROOT/starVLA}"
 RESULT_ROOT="${RESULT_ROOT:-$DATA_ROOT/results/libero-tonal-zeroshot}"
@@ -212,7 +217,7 @@ for suite in "${SUITE_LIST[@]}"; do
 done
 if [[ "$all_done" -eq 1 ]]; then
   echo "[$(date -Is)] condition already complete; refreshing summary only"
-  "$PY" "$SCRIPT_DIR/summarize_libero_tonal.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt" || true
+  "$PY" "$SCRIPT_DIR/summarize_runs.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt"
   exit 0
 fi
 
@@ -440,5 +445,5 @@ for suite in "${SUITE_LIST[@]}"; do
   run_suite "$suite"
 done
 
-"$PY" "$SCRIPT_DIR/summarize_libero_tonal.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt" || true
+"$PY" "$SCRIPT_DIR/summarize_runs.py" "$RESULT_ROOT" >"$RESULT_ROOT/summary.txt"
 echo "[$(date -Is)] tonal condition finished"

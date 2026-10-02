@@ -2,7 +2,22 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${ROOT:-$SCRIPT_DIR}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd -- "$SCRIPT_DIR/../../.." && pwd)}}"
+
+if [[ "${1:-}" == "--help" ]]; then
+  cat <<'EOF'
+Usage: run_libero_models.sh
+
+Environment-driven LIBERO model-matrix runner. Important variables:
+  IMAGE_MODE                    rgb, raw_rgb10, ev_float32, or rawvla_bench
+  RAW_FRONTEND                  none, identity, rawvla, darkisp, ram, raw_adapter, or rawild
+  LIBERO_MODELS / LIBERO_SUITES space-separated model and suite lists
+  GPU_IDS / JOBS_PER_GPU        worker placement
+  NUM_TRIALS / MAX_TASKS        evaluation size
+  RAW_FRONTEND_EVAL_DRY_RUN=1   print resolved checkpoints without launching
+EOF
+  exit 0
+fi
 REPO="${REPO:-$ROOT/starVLA}"
 PY="${PY:-python}"
 PRETRAINED_ROOT="${PRETRAINED_ROOT:-$ROOT/starVLA/playground/Pretrained_models}"
@@ -31,6 +46,7 @@ RAW_FRONTEND="${RAW_FRONTEND:-none}"
 RAW_FRONTEND_CHECKPOINT_ROOT="${RAW_FRONTEND_CHECKPOINT_ROOT:-$ROOT/baselines}"
 RAW_FRONTEND_CHECKPOINT="${RAW_FRONTEND_CHECKPOINT:-}"
 RAWVLA_CHECKPOINT_STEP="${RAWVLA_CHECKPOINT_STEP:-2000}"
+RAWVLA_BURST_DENOISE_ETA="${RAWVLA_BURST_DENOISE_ETA:-0.5}"
 RAWVLA_DISABLE_BURST_DENOISE="${RAWVLA_DISABLE_BURST_DENOISE:-false}"
 RAWVLA_DISABLE_CHROMA_DESCRIPTOR="${RAWVLA_DISABLE_CHROMA_DESCRIPTOR:-false}"
 RAWVLA_DISABLE_LUMA_DESCRIPTOR="${RAWVLA_DISABLE_LUMA_DESCRIPTOR:-false}"
@@ -201,6 +217,7 @@ frontend_overrides() {
     printf '%s\n' "$override_flag" framework.raw_frontend.luma_state_dim=64
     printf '%s\n' "$override_flag" framework.raw_frontend.split_luma_chroma_condition=true
     printf '%s\n' "$override_flag" framework.raw_frontend.max_exposure_ev=6.0
+    printf '%s\n' "$override_flag" "framework.raw_frontend.burst_denoise_eta=$RAWVLA_BURST_DENOISE_ETA"
     printf '%s\n' "$override_flag" framework.raw_frontend.fixed_update_alpha=1.0
     printf '%s\n' "$override_flag" "framework.raw_frontend.disable_burst_denoise=$RAWVLA_DISABLE_BURST_DENOISE"
     printf '%s\n' "$override_flag" "framework.raw_frontend.disable_chroma_descriptor=$RAWVLA_DISABLE_CHROMA_DESCRIPTOR"
@@ -407,5 +424,5 @@ for worker in $(seq 0 $((worker_count - 1))); do
   pids+=("$!")
 done
 wait "${pids[@]}"
-"$PY" "$ROOT/summarize_libero_zeroshot.py" "$LOG_ROOT" >"$LOG_ROOT/summary.txt"
+"$PY" "$SCRIPT_DIR/summarize_libero.py" "$LOG_ROOT" >"$LOG_ROOT/summary.txt"
 printf '[%s] scheduler finished\n' "$(date -Is)" | tee -a "$LOG_ROOT/control/master.log"

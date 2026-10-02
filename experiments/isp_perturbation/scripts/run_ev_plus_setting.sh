@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  run_libero_ev_plus_setting.sh MODEL SUITE [TRIALS]
+  run_ev_plus_setting.sh MODEL SUITE [TRIALS]
 
 Runs one EV setting group on one machine with one policy server:
   EV=+2/raw_direct
@@ -15,6 +15,11 @@ Runs one EV setting group on one machine with one policy server:
 Each phase has independent logs, resume ledger, and completion marker.
 EOF
 }
+
+if [[ "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
 
 if [[ $# -lt 2 || $# -gt 3 ]]; then
   usage
@@ -29,7 +34,7 @@ EVS="${EVS:-2 4}"
 REPS="${REPS:-raw_direct rgb_recovered}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd "$SCRIPT_DIR/../../.." && pwd)}}"
 DATA_ROOT="${DATA_ROOT:-$ROOT}"
 REPO="${REPO:-$ROOT/starVLA}"
 RESULT_ROOT="${RESULT_ROOT:-$DATA_ROOT/results/libero-float32-ev-plus}"
@@ -429,5 +434,5 @@ else
   done
 fi
 
-"$PY" "$ROOT/summarize_libero_float32_ev.py" "$RESULT_ROOT" || true
+"$PY" "$SCRIPT_DIR/summarize_float32_ev.py" "$RESULT_ROOT"
 echo "[$(date -Is)] setting finished"
