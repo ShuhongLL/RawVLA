@@ -1,0 +1,8 @@
+policy_name: policy.lerobot_remote.deploy_policy
+task_name: null
+task_config: demo_clean
+ckpt_setting: null
+seed: 0
+instruction_type: unseen
+lerobot_server_host: 127.0.0.1
+lerobot_server_port: null

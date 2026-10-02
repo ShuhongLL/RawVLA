@@ -1,0 +1,10 @@
+# RoboTwin evaluation fields are supplied by script/eval_policy.py overrides.
+policy_name: policy.openpi_remote.deploy_policy
+task_name: null
+task_config: demo_clean
+ckpt_setting: null
+seed: 0
+instruction_type: unseen
+
+openpi_server_host: 127.0.0.1
+openpi_server_port: null

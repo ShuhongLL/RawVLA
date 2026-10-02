@@ -1,0 +1,4 @@
+# Optional dependencies for RoboTwin's Azure/OpenAI description generation.
+# They are not needed for simulation, data collection, or policy evaluation.
+openai
+azure-ai-inference
