@@ -8,7 +8,7 @@ kept separate from RAWVLA-Bench.
 RAWVLA-Bench changes simulator lighting before rendering and then applies its
 fixed RGB-to-pseudo-RAW and sensor-noise path. Its implementation, frozen
 manifests, and official runners live in
-[`benchmark/rawvla-bench`](../../benchmark/rawvla-bench/README.md).
+[`experiments/simulation/libero`](../simulation/libero/README.md).
 
 ## Layout
 

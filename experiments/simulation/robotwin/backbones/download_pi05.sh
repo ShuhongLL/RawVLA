@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "Usage: $0 /path/to/pi05_robotwin"
+  exit 0
+fi
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 /path/to/pi05_robotwin" >&2
   exit 2

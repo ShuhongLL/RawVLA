@@ -13,7 +13,7 @@ from .lighting import SENSOR_SATURATION_FORMULA
 
 
 def _ensure_starvla_on_path() -> None:
-    root = Path(__file__).resolve().parents[3]
+    root = Path(__file__).resolve().parents[4]
     starvla = root / "starVLA"
     if starvla.exists() and str(starvla) not in sys.path:
         sys.path.insert(0, str(starvla))

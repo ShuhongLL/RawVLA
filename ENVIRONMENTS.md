@@ -17,14 +17,14 @@ compiler, and simulator asset installation remains host-specific.
 
 ## StarVLA + LIBERO + RAW-VLA training and replay
 
-This is the main RAW-VLA environment. The checked-in pins match the environment
-used for the local smoke tests: Python 3.10, PyTorch 2.6/CUDA 12.4,
+This is the main RAW-VLA environment. The checked-in pins match the validated
+environment: Python 3.10, PyTorch 2.6/CUDA 12.4,
 Transformers 4.57, MuJoCo 3.2.3, and robosuite 1.4.0.
 
 ```bash
 conda env create -f environment-starvla-libero.yml
 conda activate starvla-libero
-python -m pip install -e ./LIBERO-git
+python -m pip install -e ./third_party/LIBERO
 python -m pip install --no-deps -e ./third_party/openvla-oft
 python -m pip install --no-deps -e ./starVLA
 python scripts/configure_libero.py

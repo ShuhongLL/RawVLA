@@ -17,7 +17,7 @@ import numpy as np
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAWVLA_BENCH_ROOT = ROOT / "benchmark" / "rawvla-bench"
+RAWVLA_BENCH_ROOT = ROOT / "experiments" / "simulation" / "libero"
 STARVLA_ROOT = ROOT / "starVLA"
 OPENVLA_OFT_ROOT = ROOT / "third_party" / "openvla-oft"
 for path in (RAWVLA_BENCH_ROOT, STARVLA_ROOT, OPENVLA_OFT_ROOT):

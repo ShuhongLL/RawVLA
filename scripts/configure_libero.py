@@ -17,7 +17,7 @@ def main() -> int:
     parser.add_argument(
         "--libero-root",
         type=Path,
-        default=ROOT / "LIBERO-git" / "libero" / "libero",
+        default=ROOT / "third_party" / "LIBERO" / "libero" / "libero",
         help="Directory containing LIBERO assets, BDDL files, and init files.",
     )
     parser.add_argument(

@@ -7,7 +7,7 @@ same public repository; upstream-only dependencies retain their original URLs.
 | Path | Branch | Purpose |
 |---|---|---|
 | `starVLA` | `submodules/starVLA` | RAW frontend registry, training, serving, LIBERO/RoboTwin adapters |
-| `LIBERO-git` | `submodules/LIBERO` | LIBERO simulator integration |
+| `third_party/LIBERO` | `submodules/LIBERO` | LIBERO simulator integration |
 | `third_party/openvla-oft` | `submodules/openvla-oft` | OpenVLA-OFT dependency |
 | `third_party/RoboTwin` | `submodules/RoboTwin` | RAW camera and policy deployment integration |
 | `third_party/Isaac-GR00T` | upstream `main` | GR00T dependency |

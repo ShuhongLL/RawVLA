@@ -48,5 +48,5 @@ The runners derive repository paths from their own location. Override
 `RAWVLA_ROOT`, `STARVLA_DIR`, or `ROBOTWIN_PATH` only when using checkouts
 outside the standard repository layout.
 
-See [ENVIRONMENTS.md](ENVIRONMENTS.md) for the complete dependency matrix and
+See [ENVIRONMENTS.md](../../../ENVIRONMENTS.md) for the complete dependency matrix and
 the recorded local validation results.

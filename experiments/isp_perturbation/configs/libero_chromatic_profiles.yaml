@@ -17,7 +17,7 @@ profiles:
     description: "Qwen3-VL-OFT chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
@@ -39,7 +39,7 @@ profiles:
     description: "Qwen3-VL-OFT chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -63,7 +63,7 @@ profiles:
     description: "Qwen3-VL-PI chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
@@ -85,7 +85,7 @@ profiles:
     description: "Qwen3-VL-PI chromatic LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -109,7 +109,7 @@ profiles:
     description: "WM4A CosmoPredict chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
@@ -130,7 +130,7 @@ profiles:
     description: "WM4A CosmoPredict chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -153,7 +153,7 @@ profiles:
     description: "WM4A Wan2.2 chromatic LIBERO zero-shot; mirrors verified bit-depth L4 resource shape."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
@@ -174,7 +174,7 @@ profiles:
     description: "WM4A Wan2.2 chromatic LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -197,7 +197,7 @@ profiles:
     description: "PI0 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
     models:
       - PI0
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 1
     gpu_visible: "0"
     cpu: 16
@@ -214,7 +214,7 @@ profiles:
     description: "PI0.5 chromatic LIBERO zero-shot; one L4 is usually sufficient for the OpenPI server path."
     models:
       - PI05
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_chromatic_deploy
+    code_root: /path/to/RAW-VLA
     gpu_count: 1
     gpu_visible: "0"
     cpu: 16

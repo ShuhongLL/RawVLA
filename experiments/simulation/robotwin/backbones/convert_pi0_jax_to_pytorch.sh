@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  echo "Usage: $0 /path/to/pi0_robotwin/45000 /path/to/pi0_robotwin_pytorch_45000"
+  exit 0
+fi
 if [[ $# -ne 2 ]]; then
   echo "Usage: $0 /path/to/pi0_robotwin/45000 /path/to/pi0_robotwin_pytorch_45000" >&2
   exit 2
@@ -8,7 +12,7 @@ fi
 
 jax_checkpoint="$1"
 output_checkpoint="$2"
-repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 openpi_root="${OPENPI_ROOT:-$repository_root/third_party/RoboTwin/policy/pi05}"
 openpi_python="${OPENPI_PYTHON:-$openpi_root/.venv/bin/python}"
 converter="${OPENPI_CONVERTER:-$openpi_root/examples/convert_jax_model_to_pytorch.py}"

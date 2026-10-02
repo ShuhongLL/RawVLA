@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd -- "$SCRIPT_DIR/../../.." && pwd)}}"
+ROOT="${RAWVLA_ROOT:-${ROOT:-$(cd -- "$SCRIPT_DIR/../../../.." && pwd)}}"
 
 if [[ "${1:-}" == "--help" ]]; then
   cat <<'EOF'
@@ -39,7 +39,7 @@ IMAGE_MODE="${IMAGE_MODE:-rgb}"
 EV_REPRESENTATION="${EV_REPRESENTATION:-raw_direct}"
 EXPOSURE_EV="${EXPOSURE_EV:-0.0}"
 IMAGE_QUANTIZE_BITS="${IMAGE_QUANTIZE_BITS:-0}"
-RAWVLA_BENCH_MANIFEST="${RAWVLA_BENCH_MANIFEST:-$ROOT/benchmark/rawvla-bench/libero_manifest_50_init_states_10000_rollouts.json}"
+RAWVLA_BENCH_MANIFEST="${RAWVLA_BENCH_MANIFEST:-$ROOT/experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json}"
 RAWVLA_BENCH_REPRESENTATION="${RAWVLA_BENCH_REPRESENTATION:-raw}"
 USE_RAWVLA_MANIFEST_PLAN="${USE_RAWVLA_MANIFEST_PLAN:-0}"
 RAW_FRONTEND="${RAW_FRONTEND:-none}"
@@ -87,7 +87,7 @@ if [[ "$IMAGE_MODE" != "rgb" && "$IMAGE_MODE" != "raw_rgb10" && "$IMAGE_MODE" !=
 fi
 if [[ ( "$IMAGE_MODE" == "rawvla_bench" || "$USE_RAWVLA_MANIFEST_PLAN" == "1" ) && ! -f "$RAWVLA_BENCH_MANIFEST" ]]; then
   echo "RAWVLA_BENCH_MANIFEST does not exist: $RAWVLA_BENCH_MANIFEST" >&2
-  echo "Build it with: PYTHONPATH=$ROOT/benchmark/rawvla-bench python $ROOT/benchmark/rawvla-bench/scripts/build_manifest.py" >&2
+  echo "Build it with: PYTHONPATH=$ROOT/experiments/simulation/libero python $ROOT/experiments/simulation/libero/scripts/build_manifest.py" >&2
   exit 2
 fi
 if [[ "$RAWVLA_BENCH_REPRESENTATION" != "raw" && "$RAWVLA_BENCH_REPRESENTATION" != "default_isp" ]]; then

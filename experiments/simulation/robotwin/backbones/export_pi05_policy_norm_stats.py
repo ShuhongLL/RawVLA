@@ -10,9 +10,6 @@ import os
 from pathlib import Path
 import tempfile
 
-from safetensors import safe_open
-
-
 FIELDS = ("mean", "std", "min", "max", "q01", "q99")
 SOURCE_KEYS = {
     "actions": "action",
@@ -42,6 +39,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    from safetensors import safe_open
+
     checkpoint_dir = args.checkpoint_dir.resolve()
     source_path = checkpoint_dir / "policy_preprocessor_step_3_normalizer_processor.safetensors"
     output_path = (args.output or checkpoint_dir / "policy_norm_stats.json").resolve()

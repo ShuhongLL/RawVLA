@@ -166,9 +166,3 @@ multiplier for 2k steps. Current paired-RGB-MAE selections are:
 
 The machine-readable version is `optimal_backbone_configs.yaml`. These are
 frontend image-similarity selections, not substitutes for LIBERO rollouts.
-
-## Smoke test
-
-```bash
-python -m baselines.rawvla.smoke_test
-```

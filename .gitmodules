@@ -2,8 +2,8 @@
 	path = starVLA
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/starVLA
-[submodule "LIBERO-git"]
-	path = LIBERO-git
+[submodule "third_party/LIBERO"]
+	path = third_party/LIBERO
 	url = https://github.com/ShuhongLL/RawVLA.git
 	branch = submodules/LIBERO
 [submodule "third_party/openvla-oft"]

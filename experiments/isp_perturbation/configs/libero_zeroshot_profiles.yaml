@@ -18,7 +18,7 @@ profiles:
     description: "Qwen3-VL-OFT LIBERO zero-shot. Verified by r36: all six b4/b2 gaps completed."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_oomfix_20260801T1601Z
+    code_root: /path/to/RAW-VLA
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
@@ -38,7 +38,7 @@ profiles:
     description: "Qwen3-VL-OFT LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_oomfix_20260801T1601Z
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -60,7 +60,7 @@ profiles:
     description: "Qwen3-VL-PI LIBERO zero-shot. Verified by r40: PI resumes and advances without illegal-memory-access."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_pi_noearlycache_20260802T0144Z
+    code_root: /path/to/RAW-VLA
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
@@ -80,7 +80,7 @@ profiles:
     description: "Qwen3-VL-PI LIBERO zero-shot on H20; single-GPU visible, no Qwen sharding."
     models:
       - Qwen3-VL-PI-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_qwen_pi_noearlycache_20260802T0144Z
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -102,7 +102,7 @@ profiles:
     description: "WM4A CosmoPredict LIBERO zero-shot. Verified by r32: 2xL4 with cleanup/retry."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
+    code_root: /path/to/RAW-VLA
     gpu_count: 2
     gpu_visible: "0,1"
     cpu: 16
@@ -122,7 +122,7 @@ profiles:
     description: "WM4A CosmoPredict LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-CosmoPredict-GR00T-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""
@@ -144,7 +144,7 @@ profiles:
     description: "WM4A Wan2.2 LIBERO zero-shot. Verified by r33: 3xL4 with cleanup/retry."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
+    code_root: /path/to/RAW-VLA
     gpu_count: 3
     gpu_visible: "0,1,2"
     cpu: 16
@@ -164,7 +164,7 @@ profiles:
     description: "WM4A Wan2.2 LIBERO zero-shot on H20; single-GPU visible, no world-model sharding."
     models:
       - WM4A-Wan2d2-OFT-LIBERO-4in1
-    code_root: /path/to/RAW-VLA/code_snapshots/libero_bitdepth_wm_retry_cleanup_20260801T1530Z
+    code_root: /path/to/RAW-VLA
     resource_queue_id: q-20260626224930-pzw64
     instance_type_id: ml.hpcpni3l.48xlarge
     zone_id: ""

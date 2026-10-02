@@ -25,7 +25,7 @@ The released manifest name is `rawvla-bench-light-libero-v1`.
   `raw_rgb10_unprocessing.py`, adds fixed shot/read RAW noise, and returns
   either a RAW view or default-ISP RGB.
 - `scripts/build_manifest.py`: writes
-  `libero_manifest_50_init_states_10000_rollouts.json` by default.
+  `manifests/libero_manifest_50_init_states_10000_rollouts.json` by default.
 - `scripts/render_lighting_preview.py`: renders five-domain preview images.
   It also writes `*_raw_normalized_sheet.png`, where each RAW preview is
   independently scaled to the same p95 display luma for visual noise inspection
@@ -77,7 +77,7 @@ multiplied again by EV.
 ## Paired Episodes
 
 The default LIBERO test manifest is
-`libero_manifest_50_init_states_10000_rollouts.json`. It uses all 50 fixed
+`manifests/libero_manifest_50_init_states_10000_rollouts.json`. It uses all 50 fixed
 LIBERO initial states per task and evaluates each one under the five lighting
 domains, for 250 rollouts per task:
 
@@ -92,7 +92,7 @@ Across all four standard LIBERO suites, this default protocol has:
 ```
 
 For quicker compatibility checks, the smaller
-`libero_manifest_10_init_states_2000_rollouts.json` keeps the first 10 fixed
+`manifests/libero_manifest_10_init_states_2000_rollouts.json` keeps the first 10 fixed
 initial states per task:
 
 ```text
@@ -113,8 +113,8 @@ deterministic `noise_seed`, which is frozen per
 ## Build Manifest
 
 ```bash
-PYTHONPATH=benchmark/rawvla-bench \
-python benchmark/rawvla-bench/scripts/build_manifest.py
+PYTHONPATH=experiments/simulation/libero \
+python experiments/simulation/libero/scripts/build_manifest.py
 ```
 
 ## Evaluate With StarVLA LIBERO
@@ -124,7 +124,7 @@ Use the patched `eval_libero.py` with:
 ```bash
 export RAWVLA_ROOT="$(pwd)"
 --args.image-mode rawvla_bench \
---args.rawvla-bench-manifest $RAWVLA_ROOT/benchmark/rawvla-bench/libero_manifest_50_init_states_10000_rollouts.json \
+--args.rawvla-bench-manifest $RAWVLA_ROOT/experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json \
 --args.rawvla-bench-representation raw
 ```
 
@@ -157,7 +157,7 @@ For example, evaluate RAWVLA on RAW observations across all six backbones:
 ```bash
 RAW_FRONTEND=rawvla \
 RAWVLA_CHECKPOINT_STEP=2000 \
-bash benchmark/rawvla-bench/scripts/run_libero_bench.sh
+bash experiments/simulation/libero/scripts/run_libero_bench.sh
 ```
 
 Evaluate without an ISP module:
@@ -165,7 +165,7 @@ Evaluate without an ISP module:
 ```bash
 RAW_FRONTEND=none \
 RAWVLA_BENCH_REPRESENTATION=raw \
-bash benchmark/rawvla-bench/scripts/run_libero_bench.sh
+bash experiments/simulation/libero/scripts/run_libero_bench.sh
 ```
 
 Replace `rawvla` with `darkisp`, `ram`, `raw_adapter`, or `rawild` to select a
@@ -181,5 +181,5 @@ RAW_FRONTEND=rawvla \
 IMAGE_MODE=rawvla_bench \
 RAWVLA_BENCH_REPRESENTATION=raw \
 RAW_FRONTEND_EVAL_DRY_RUN=1 \
-bash benchmark/rawvla-bench/scripts/run_libero_models.sh
+bash experiments/simulation/libero/scripts/run_libero_models.sh
 ```

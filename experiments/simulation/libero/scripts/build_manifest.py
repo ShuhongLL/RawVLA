@@ -7,8 +7,8 @@ import argparse
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-PACKAGE_ROOT = ROOT / "benchmark" / "rawvla-bench"
+ROOT = Path(__file__).resolve().parents[4]
+PACKAGE_ROOT = ROOT / "experiments" / "simulation" / "libero"
 if str(PACKAGE_ROOT) not in sys.path:
     sys.path.insert(0, str(PACKAGE_ROOT))
 
@@ -20,7 +20,7 @@ def main() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path("benchmark/rawvla-bench/libero_manifest_50_init_states_10000_rollouts.json"),
+        default=PACKAGE_ROOT / "manifests" / "libero_manifest_50_init_states_10000_rollouts.json",
     )
     parser.add_argument("--benchmark-seed", type=int, default=20260813)
     parser.add_argument("--base-seeds-per-task", type=int, default=50)

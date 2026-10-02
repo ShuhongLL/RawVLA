@@ -38,7 +38,7 @@ particular cluster filesystem layout.
 Download the inference/conversion subset of the pinned checkpoint:
 
 ```bash
-bash backbone/robotwin/download_pi0.sh "$MODEL_ROOT/pi0_robotwin"
+bash experiments/simulation/robotwin/backbones/download_pi0.sh "$MODEL_ROOT/pi0_robotwin"
 ```
 
 Expected source layout:
@@ -60,7 +60,7 @@ the Orbax weights must be converted:
 export OPENPI_ROOT=/path/to/a/compatible/openpi
 export OPENPI_PYTHON=/path/to/openpi-python
 
-bash backbone/robotwin/convert_pi0_jax_to_pytorch.sh \
+bash experiments/simulation/robotwin/backbones/convert_pi0_jax_to_pytorch.sh \
   "$MODEL_ROOT/pi0_robotwin/45000" \
   "$MODEL_ROOT/pi0_robotwin_pytorch_45000"
 ```
@@ -107,7 +107,7 @@ converted model and the original policy statistics.
 Download the complete pinned LeRobot policy:
 
 ```bash
-bash backbone/robotwin/download_pi05.sh "$MODEL_ROOT/pi05_robotwin"
+bash experiments/simulation/robotwin/backbones/download_pi05.sh "$MODEL_ROOT/pi05_robotwin"
 ```
 
 The downloaded checkpoint already contains PyTorch weights. Do **not** convert
@@ -129,7 +129,7 @@ The RAWVLA NPZ loader instead consumes an equivalent JSON representation. Export
 it from the checkpoint's preprocessor normalizer:
 
 ```bash
-python backbone/robotwin/export_pi05_policy_norm_stats.py \
+python experiments/simulation/robotwin/backbones/export_pi05_policy_norm_stats.py \
   --checkpoint-dir "$MODEL_ROOT/pi05_robotwin"
 ```
 

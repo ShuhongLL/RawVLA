@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 STARVLA = ROOT / "starVLA"
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 for path in (STARVLA, PACKAGE_ROOT):
@@ -245,9 +245,9 @@ def main() -> None:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=ROOT / "benchmark/rawvla-bench/libero_manifest_50_init_states_10000_rollouts.json",
+        default=ROOT / "experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json",
     )
-    parser.add_argument("--out-dir", type=Path, default=ROOT / "benchmark/rawvla-bench/smoke_preview")
+    parser.add_argument("--out-dir", type=Path, default=ROOT / "experiments/simulation/libero/smoke_preview")
     parser.add_argument("--seed", type=int, default=20260816)
     parser.add_argument("--per-suite", type=int, default=2)
     args = parser.parse_args()

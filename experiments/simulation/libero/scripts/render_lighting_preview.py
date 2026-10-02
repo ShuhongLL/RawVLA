@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[4]
 STARVLA = ROOT / "starVLA"
 if STARVLA.exists() and str(STARVLA) not in sys.path:
     sys.path.insert(0, str(STARVLA))
@@ -204,9 +204,9 @@ def main() -> None:
     parser.add_argument(
         "--manifest",
         type=Path,
-        default=ROOT / "benchmark/rawvla-bench/libero_manifest_50_init_states_10000_rollouts.json",
+        default=ROOT / "experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json",
     )
-    parser.add_argument("--out-dir", type=Path, default=ROOT / "benchmark/rawvla-bench/libero_lighting_preview")
+    parser.add_argument("--out-dir", type=Path, default=ROOT / "experiments/simulation/libero/libero_lighting_preview")
     parser.add_argument("--suite", default="libero_spatial")
     parser.add_argument("--task-id", type=int, default=0)
     parser.add_argument("--base-seed-id", type=int, default=0)

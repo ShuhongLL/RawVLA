@@ -8,20 +8,21 @@ evaluation adapters, and the replay code used to produce training trajectories.
 ## Repository layout
 
 ```text
-baselines/rawvla/          RAW-VLA model and architecture notes
-benchmark/rawvla-bench/   RAW formation, lighting domains, and frozen manifests
-experiments/isp_perturbation/  legacy synthetic ISP perturbation studies
-experiments/real_robot/    physical-robot integration entry points
-starVLA/                   StarVLA integration (submodule)
-LIBERO-git/                LIBERO integration (submodule)
-third_party/RoboTwin/      RoboTwin 2.0 integration (submodule)
-third_party/openvla-oft/   OpenVLA-OFT dependency (submodule)
-third_party/FastWAM/       FastWAM integration (submodule)
-third_party/Isaac-GR00T/   GR00T dependency (submodule)
-scripts/                   shared training, replay, setup, and validation tools
-replay/                    replay documentation and small manifests
-finetune/calibration/      default-ISP calibration utilities
-tools/checkpoints/         public checkpoint download and validation helpers
+baselines/rawvla/                    RAW-VLA model implementation
+experiments/simulation/libero/      LIBERO benchmark, manifests, and runners
+experiments/simulation/robotwin/    RoboTwin setup, manifests, and backbones
+experiments/isp_perturbation/       legacy synthetic ISP perturbation studies
+experiments/real_robot/             physical-robot integration entry points
+starVLA/                             StarVLA integration (submodule)
+third_party/LIBERO/                  LIBERO simulator integration (submodule)
+third_party/RoboTwin/                RoboTwin 2.0 integration (submodule)
+third_party/openvla-oft/             OpenVLA-OFT dependency (submodule)
+third_party/FastWAM/                 FastWAM integration (submodule)
+third_party/Isaac-GR00T/             GR00T dependency (submodule)
+scripts/                             shared training, replay, and setup tools
+replay/                              replay instructions and small manifests
+finetune/calibration/                default-ISP calibration utilities
+tools/checkpoints/                   checkpoint download and validation helpers
 ```
 
 ## Clone
@@ -31,7 +32,6 @@ git clone --recurse-submodules https://github.com/ShuhongLL/RawVLA.git
 cd RawVLA
 git submodule sync --recursive
 git submodule update --init --recursive
-python scripts/check_release.py
 ```
 
 Several project-maintained submodules are branches of this repository. Their
@@ -52,19 +52,6 @@ conda env create -f environment-robotwin2.yml
 
 After installing StarVLA/LIBERO, generate the ignored machine-local LIBERO
 configuration with `python scripts/configure_libero.py`.
-
-## Model smoke test
-
-With PyTorch installed:
-
-```bash
-python -m baselines.rawvla.smoke_test
-```
-
-This validates RAW-VLA tensor contracts, recurrent-state updates, theta
-parameterization, and gradients. The current split architecture decodes theta
-from `[fused current feature, updated recurrent state]`; the descriptor is not
-concatenated into the decoder twice.
 
 ## Checkpoints
 
@@ -100,7 +87,7 @@ dataset/checkpoint paths or loss weights in the config before a production run.
 ## Replay data
 
 Replay source code is part of the release. See [replay/README.md](replay/README.md)
-for data downloads and smoke commands for:
+for data downloads and replay commands for:
 
 - LIBERO simulator re-rendering into paired RAW/RGB NPZ trajectories;
 - RoboTwin 2.0 clean expert replay;
@@ -116,11 +103,11 @@ The main public runners derive paths from the checkout and accept overrides via
 environment variables:
 
 ```bash
-PY=python bash benchmark/rawvla-bench/scripts/run_libero_bench.sh
+PY=python bash experiments/simulation/libero/scripts/run_libero_bench.sh
 
 DATA_ROOT=/path/to/data \
 CKPT_ROOT=/path/to/checkpoints \
-bash scripts/run_robotwin2_starvla_rgb_eval.sh smoke
+bash scripts/run_robotwin2_starvla_rgb_eval.sh one adjust_bottle
 ```
 
 Run scripts with `--help` where supported and start with one task/episode before
@@ -132,17 +119,6 @@ separate from RAWVLA-Bench under
 Physical-robot entry points are documented under
 [`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and
 LIBERO remain simulator integrations.
-
-## Repository validation
-
-The default `.gitignore` excludes generated datasets, checkpoints, media, and
-run outputs so routine experiments do not accidentally stage large artifacts.
-Repository owners can explicitly add selected release artifacts when desired.
-To validate source paths, syntax, secrets, and initialized submodules, run:
-
-```bash
-python scripts/check_release.py --strict
-```
 
 The root project is released under the MIT License. Third-party submodules
 retain their own licenses.

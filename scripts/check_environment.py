@@ -52,12 +52,12 @@ def add_source_paths() -> None:
     paths = (
         ROOT,
         ROOT / "starVLA",
-        ROOT / "LIBERO-git",
+        ROOT / "third_party" / "LIBERO",
         ROOT / "third_party" / "openvla-oft",
         ROOT / "third_party" / "RoboTwin",
         ROOT / "third_party" / "FastWAM" / "src",
         ROOT / "third_party" / "Isaac-GR00T",
-        ROOT / "benchmark" / "rawvla-bench",
+        ROOT / "experiments" / "simulation" / "libero",
     )
     for path in reversed(paths):
         if path.exists():

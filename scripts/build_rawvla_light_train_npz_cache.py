@@ -17,7 +17,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-RAWVLA_BENCH_ROOT = ROOT / "benchmark" / "rawvla-bench"
+RAWVLA_BENCH_ROOT = ROOT / "experiments" / "simulation" / "libero"
 if str(RAWVLA_BENCH_ROOT) not in sys.path:
     sys.path.insert(0, str(RAWVLA_BENCH_ROOT))
 

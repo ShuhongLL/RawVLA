@@ -4,7 +4,7 @@ import pathlib
 import sys
 
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
 
 
 def main(root: pathlib.Path) -> None:

@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 BENCH_DIR="$(cd -- "$SCRIPT_DIR/.." && pwd)"
-ROOT="${RAWVLA_ROOT:-$(cd -- "$BENCH_DIR/../.." && pwd)}"
+ROOT="${RAWVLA_ROOT:-$(cd -- "$BENCH_DIR/../../.." && pwd)}"
 
 if [[ "${1:-}" == "--help" ]]; then
   cat <<'EOF'
@@ -16,7 +16,7 @@ EOF
   exit 0
 fi
 
-MANIFEST="${RAWVLA_BENCH_MANIFEST:-$BENCH_DIR/libero_manifest_50_init_states_10000_rollouts.json}"
+MANIFEST="${RAWVLA_BENCH_MANIFEST:-$BENCH_DIR/manifests/libero_manifest_50_init_states_10000_rollouts.json}"
 REPRESENTATION="${RAWVLA_BENCH_REPRESENTATION:-raw}"
 
 if [[ ! -f "$MANIFEST" ]]; then
