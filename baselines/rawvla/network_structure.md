@@ -61,7 +61,7 @@ X_t^d  (denoised current RAW)
              v                     v
    +-------------------+   +-------------------+
    | ISP Parameter     |   | Update Gate       |
-   | Heads             |   | alpha_K,A,T       |
+   | Heads             |   | alpha_A,T         |
    | hat_Theta_t       |   +-------------------+
    +-------------------+             |
              |                       |
@@ -154,8 +154,9 @@ z_t   = concat(g_t, e_t^H)
 
 The recurrent branch additionally receives a compact embedding of the previous
 explicit ISP operating point. For the global-only v1, `Summary(Theta)` is the
-vector of global denoise, scalar-exposure, fused-WB/CCM, and tone controls. If
-local parameter maps are enabled later, summarize them with channel-wise
+vector of scalar-exposure, fused-WB/CCM, and tone controls. Burst merge strength
+is fixed and therefore is not part of the recurrent descriptor. If local
+parameter maps are enabled later, summarize them with channel-wise
 spatial statistics rather than flattening full-resolution maps:
 
 ```text
@@ -183,11 +184,10 @@ r_i = sigma2 / (abs(F_i - F_t)^2 + sigma2)
 
 where `F_t` is the FFT of the current RAW patch and `F_i` is the FFT of a historical RAW patch.
 
-### 3.2 Recommended Control
+### 3.2 Fixed Control
 
-The learnable version should control the amount of historical correction inside
-`fft_cons` itself, instead of first producing a fixed denoised candidate and then
-blending it again with the reference frame.
+RAW-VLA uses a fixed historical-correction strength inside `fft_cons` and does
+not predict it from the image or recurrent state.
 
 ```text
 F_out = F_t + eta_denoise * sum_i w_i * r_i * (F_i - F_t)
@@ -195,10 +195,8 @@ r_i = sigma2 / (abs(F_i - F_t)^2 + sigma2)
 X_t^d = overlap_add(IFFT(F_out))
 ```
 
-where `eta_denoise` is a learned scalar in `[0, 1]` predicted from the
-histogram/state branch. This gives the denoise stage a single learned fusion
-parameter while preserving the burst + local FFT merge design from
-`denoise.md`.
+where `eta_denoise = 0.5`. This preserves the burst + local FFT merge design
+from `denoise.md` while removing the denoise head and its recurrent state.
 
 Avoid adding a second image-space blend after `fft_cons`, because that only
 rescales the same historical correction already controlled by the FFT merge
@@ -315,7 +313,7 @@ to track:
 - illumination/noise trends not recoverable from the current frame alone;
 - hysteresis that separates transient fluctuations from persistent changes.
 
-The previous tone, denoise, scalar-exposure, and fused-WB/CCM operating point is
+The previous tone, scalar-exposure, and fused-WB/CCM operating point is
 represented explicitly by `Theta_{t-1}` and enters the GRU through
 `e_{t-1}^Theta`.
 
@@ -325,7 +323,6 @@ Predict structured parameter groups instead of directly synthesizing an RGB imag
 
 ```text
 hat_Theta_t = {
-  theta_K: raw noise/detail controls,
   theta_A: scalar-exposure and fused-WB/CCM controls,
   theta_T: tone controls
 }
@@ -348,10 +345,9 @@ RAW-VLA keeps the same principle:
 
 ```text
 rgb_raw burst
-  -> RAW temporal denoise candidate
+  -> RAW temporal denoise with fixed eta_denoise=0.5
   -> Spatial/Histogram/State conditioning
   -> Structured ISP heads
-       denoise head -> eta_denoise / fft_cons merge controls
        color head   -> global 3x3 + optional local residual
        tone head    -> low-light and highlight tone coefficients
 ```
@@ -495,48 +491,24 @@ S_t = GRUCell(u_t, S_{t-1}) = [B, 128]
 ```
 
 For the recommended global-only v1, `D_theta` is the flattened size of the
-constrained global controls (denoise scalar, scalar exposure, fused WB/CCM
-color matrix, and global tone coefficients). `Summary` must use the same
+constrained global controls (scalar exposure, fused WB/CCM color matrix, and
+global tone coefficients). `Summary` must use the same
 normalized parameterization as the heads so that identity initialization has a
 stable, known descriptor.
 
-The concrete recurrent descriptor has `D_theta = 31`: one denoise strength,
-one scalar exposure EV, two independent relative-WB coordinates, six
+The concrete recurrent descriptor has `D_theta = 30`: one scalar exposure EV,
+two independent relative-WB coordinates, six
 off-diagonal CCM residuals, and 21 identifiable global tone logits. The WB and
 CCM controls are composed into one scale-free `3 x 3` matrix before
 application. Local color/tone maps are current-frame residuals and are not
 retained in `Theta_t`.
 
-### 7.1.4 Denoise Control Head
+### 7.1.4 Fixed Burst Merge
 
-This head controls the RAW-domain `fft_cons` candidate rather than generating a
-new denoised image.
-
-Input:
+There is no denoise-control head. The RAW-domain operator uses a constant:
 
 ```text
-c_t = concat(u_t, S_t, e_t^H) = [B, 320]
-```
-
-Layers:
-
-```text
-denoise_global:
-  Linear(320, 128)
-  SiLU
-  Linear(128, 1)
-```
-
-Outputs:
-
-```text
-eta_denoise = sigmoid(out[0])              # [B, 1]
-```
-
-Use in v1:
-
-```text
-x_d = fft_cons(raw_burst, eta_denoise=eta_denoise)
+x_d = fft_cons(raw_burst, eta_denoise=0.5)
 ```
 
 Optional local detail map:
@@ -699,14 +671,13 @@ Layers:
 update_gate:
   Linear(352, 128)
   SiLU
-  Linear(128, 3)
+  Linear(128, 2)  # legacy; split uses 3 for exposure/chroma/tone
   Sigmoid
 ```
 
 Outputs:
 
 ```text
-alpha_K: denoise controls
 alpha_A: scalar-exposure and fused-WB/CCM controls
 alpha_T: tone controls
 ```
@@ -714,7 +685,6 @@ alpha_T: tone controls
 Smoothing:
 
 ```text
-Theta_t^K = (1 - alpha_K) * Theta_{t-1}^K + alpha_K * hat_Theta_t^K
 Theta_t^A = (1 - alpha_A) * Theta_{t-1}^A + alpha_A * hat_Theta_t^A
 Theta_t^T = (1 - alpha_T) * Theta_{t-1}^T + alpha_T * hat_Theta_t^T
 ```
@@ -726,25 +696,11 @@ for example:
 b_alpha = -2.0  # sigmoid ~= 0.12
 ```
 
-### 7.2 Raw Noise/Detail Head
+### 7.2 Raw Noise/Detail Operator
 
-This head controls a constrained RAW processing operator.
-
-Minimal global controls:
-
-```text
-eta_denoise: scalar in [0, 1]
-```
-
-First implementation can use:
-
-```text
-eta_denoise = sigmoid(MLP(S_t, e_t^H))
-```
-
-If `fft_cons` is the only denoise operator, `eta_denoise` is enough for v1. The
-scalar is applied inside the FFT merge as the historical-correction strength,
-not as a second image-space blend after `fft_cons`.
+`fft_cons` remains a deterministic, differentiable RAW operator. Its
+historical-correction strength is fixed to `eta_denoise = 0.5`; reliability
+weights still suppress inconsistent history at each frequency.
 
 ### 7.3 Exposure and Fused WB/CCM Head
 
@@ -788,13 +744,12 @@ an exposure-adaptive S-curve without a separate low/high selector.
 Predict adaptation rate for each parameter group:
 
 ```text
-alpha_K, alpha_A, alpha_T = sigmoid(MLP([z_t, e_{t-1}^Theta, S_t]))
+alpha_A, alpha_T = sigmoid(MLP([z_t, e_{t-1}^Theta, S_t]))
 ```
 
 Smooth candidate parameters:
 
 ```text
-Theta_t^K = (1 - alpha_K) * Theta_{t-1}^K + alpha_K * hat_Theta_t^K
 Theta_t^A = (1 - alpha_A) * Theta_{t-1}^A + alpha_A * hat_Theta_t^A
 Theta_t^T = (1 - alpha_T) * Theta_{t-1}^T + alpha_T * hat_Theta_t^T
 ```
@@ -805,7 +760,7 @@ Initialization:
 
 ```text
 Theta_0:
-  eta_denoise = 0
+  eta_denoise = 0.5  # compatibility/output field, not predicted
   A = identity
   tone = identity-like coefficients
 S_0 = zeros
@@ -814,17 +769,14 @@ S_0 = zeros
 Candidate-head and update-gate final weights use a small random initialization
 (`std = 1e-3`) instead of exact zeros, so the first task-loss backward pass can
 reach their preceding MLPs and the shared encoder/GRU. Neutral biases are kept
-for color and tone. The denoise candidate starts at `eta_hat = 0.5`; with the
-initial update-gate bias `-2`, the first applied state is only about `0.06`.
-`Theta_0.eta_denoise = 0` therefore remains an exact identity fallback. The
-validated FFT reliability scale and history weights remain those of the
-`frequency_burst_merge` probe; `eta_hat` controls how much of that correction
-is admitted.
+for color and tone. The validated FFT reliability scale and history weights
+remain those of the `frequency_burst_merge` probe; the global correction
+multiplier is always `0.5`.
 
 ## 9. Structured Adaptive ISP Forward
 
-A practical v1 forward pass avoids circular dependence by computing the
-learned FFT merge parameters before running the RAW-domain denoise:
+A practical v1 forward pass uses the unmodified current RAW anchor to predict
+only the color/tone operating point:
 
 ```text
 def forward(raw_burst, state=None, theta_prev=None):
@@ -851,9 +803,8 @@ def forward(raw_burst, state=None, theta_prev=None):
     alpha = update_gate(g, e_h, e_theta_prev, s)
     theta = smooth(theta_hat, theta_prev, alpha)
 
-    # Denoise is directly on RAW. The learned scalar controls the FFT merge
-    # internally instead of blending a finished denoise candidate afterward.
-    x_d = fft_cons(raw_burst, eta_denoise=theta.eta_denoise)
+    # Burst correction is deterministic; RAW-VLA does not predict its strength.
+    x_d = fft_cons(raw_burst, eta_denoise=0.5)
     z = apply_exposure_wb_ccm(x_d, theta.exposure, theta.color)
     y = apply_bidirectional_tone(z, theta.tone)
 
@@ -894,7 +845,7 @@ this version.
 2. Implement histogram descriptor and histogram encoder.
 3. Implement spatial encoder, GRU state, parameter heads, and update gate.
 4. Implement scalar exposure plus the global fused WB/CCM matrix and bidirectional tone mapping.
-5. Add learned `eta_denoise` control inside `fft_cons`.
+5. Fix `eta_denoise=0.5` inside `fft_cons` and exclude it from prediction/state.
 6. Train/evaluate with frozen VLA first, then optionally jointly tune the frontend.
 
 ## 12. Key Design Decisions

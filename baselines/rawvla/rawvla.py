@@ -6,7 +6,8 @@ RGB RAW frames and returns a VLA-facing RGB frame together with two compact
 streaming states:
 
 * ``state`` is a GRU state for exposure/noise trends and adaptation hysteresis.
-* ``theta`` is the explicit denoise/color/tone ISP operating point.
+* ``theta`` is the explicit color/tone ISP operating point; its compatibility
+  field for burst strength is always the fixed value ``0.5``.
 
 The downstream task loss is intentionally external to this module.  No
 Self-Boost or clean-image reconstruction objective is used here.
@@ -24,6 +25,7 @@ from torch.nn import functional as F
 
 
 DEFAULT_EXPOSURE_TARGET = 0.48
+FIXED_DENOISE_ETA = 0.5
 MAX_EXPOSURE_EV = 6.0
 MAX_WB_EV = 1.0
 # Backward-compatible public alias. The revised model uses this range only for
@@ -73,7 +75,7 @@ class RAWVLATheta:
     independent of image resolution.
     """
 
-    eta_denoise: Tensor  # [B, 1]
+    eta_denoise: Tensor  # [B, 1], fixed to FIXED_DENOISE_ETA
     exposure_ev: Tensor  # [B, 1], achromatic exposure in EV
     wb_ev: Tensor  # [B, 3], zero-sum relative white balance in EV
     ccm_matrix: Tensor  # [B, 3, 3], unit diagonal with bounded off-diagonals
@@ -111,7 +113,9 @@ def neutral_theta(batch_size: int, *, device: torch.device, dtype: torch.dtype) 
     """Return an identity-like ISP state for a new sequence."""
 
     return RAWVLATheta(
-        eta_denoise=torch.zeros(batch_size, 1, device=device, dtype=dtype),
+        eta_denoise=torch.full(
+            (batch_size, 1), FIXED_DENOISE_ETA, device=device, dtype=dtype
+        ),
         exposure_ev=torch.zeros(batch_size, 1, device=device, dtype=dtype),
         wb_ev=torch.zeros(batch_size, 3, device=device, dtype=dtype),
         ccm_matrix=torch.eye(3, device=device, dtype=dtype).expand(batch_size, -1, -1).clone(),
@@ -125,7 +129,11 @@ def summarize_theta(
     max_exposure_ev: float = MAX_EXPOSURE_EV,
     max_wb_ev: float = MAX_WB_EV,
 ) -> Tensor:
-    """Encode the 31 independent coordinates of ``theta``."""
+    """Encode the 30 predicted coordinates of ``theta``.
+
+    The burst merge strength is fixed and therefore is not part of the
+    recurrent operating-point descriptor.
+    """
 
     if max_exposure_ev <= 0.0 or max_wb_ev <= 0.0:
         raise ValueError("max_exposure_ev and max_wb_ev must be positive")
@@ -137,7 +145,6 @@ def summarize_theta(
     )
     return torch.cat(
         (
-            theta.eta_denoise,
             theta.exposure_ev / max_exposure_ev,
             theta.wb_ev[:, :2] / max_wb_ev,
             off_diagonal / 0.25,
@@ -155,20 +162,19 @@ def _straight_through_clamp(value: Tensor, minimum: float = 0.0, maximum: float 
 
 
 def smooth_theta(candidate: RAWVLATheta, previous: RAWVLATheta, gate: Tensor) -> RAWVLATheta:
-    """Apply denoise/color/tone group-wise interpolation gates."""
+    """Apply exposure/chroma/tone group-wise interpolation gates."""
 
-    if gate.ndim != 2 or gate.shape[1] not in (3, 4):
-        raise ValueError(f"gate must have shape [B, 3] or [B, 4], got {tuple(gate.shape)}")
-    gate_k = gate[:, 0:1]
-    if gate.shape[1] == 3:
-        # Legacy grouping: denoise, all color controls, tone.
-        gate_e = gate_c = gate[:, 1:2]
-        gate_t = gate[:, 2:3]
+    if gate.ndim != 2 or gate.shape[1] not in (2, 3):
+        raise ValueError(f"gate must have shape [B, 2] or [B, 3], got {tuple(gate.shape)}")
+    if gate.shape[1] == 2:
+        # Legacy grouping: all color controls, tone.
+        gate_e = gate_c = gate[:, 0:1]
+        gate_t = gate[:, 1:2]
     else:
-        # Split grouping: denoise, achromatic exposure, chroma, tone.
-        gate_e = gate[:, 1:2]
-        gate_c = gate[:, 2:3]
-        gate_t = gate[:, 3:4]
+        # Split grouping: achromatic exposure, chroma, tone.
+        gate_e = gate[:, 0:1]
+        gate_c = gate[:, 1:2]
+        gate_t = gate[:, 2:3]
 
     def blend(old: Tensor, new: Tensor, alpha: Tensor) -> Tensor:
         while alpha.ndim < old.ndim:
@@ -176,7 +182,9 @@ def smooth_theta(candidate: RAWVLATheta, previous: RAWVLATheta, gate: Tensor) ->
         return old + alpha * (new - old)
 
     return RAWVLATheta(
-        eta_denoise=blend(previous.eta_denoise, candidate.eta_denoise, gate_k),
+        eta_denoise=candidate.eta_denoise.new_full(
+            candidate.eta_denoise.shape, FIXED_DENOISE_ETA
+        ),
         exposure_ev=blend(previous.exposure_ev, candidate.exposure_ev, gate_e),
         wb_ev=blend(previous.wb_ev, candidate.wb_ev, gate_c),
         ccm_matrix=blend(previous.ccm_matrix, candidate.ccm_matrix, gate_c),
@@ -556,7 +564,7 @@ def exposure_prior_loss(rgb: Tensor, *, target_mean: float = DEFAULT_EXPOSURE_TA
 class RAWVLA(nn.Module):
     """Streaming structured RAW ISP frontend."""
 
-    theta_dim = 31
+    theta_dim = 30
 
     def __init__(
         self,
@@ -568,7 +576,6 @@ class RAWVLA(nn.Module):
         use_local_tone: bool = False,
         fft_patch_size: int = 32,
         fft_stride: int = 16,
-        initial_eta_candidate: float = 0.5,
         head_init_std: float = 1.0e-3,
         max_exposure_ev: float = MAX_EXPOSURE_EV,
         fixed_update_alpha: float | None = 1.0,
@@ -595,8 +602,6 @@ class RAWVLA(nn.Module):
         self.luma_spatial_input = str(luma_spatial_input).lower()
         if self.luma_spatial_input not in {"luma", "rgb"}:
             raise ValueError("luma_spatial_input must be 'luma' or 'rgb'")
-        if not 0.0 < initial_eta_candidate < 1.0:
-            raise ValueError("initial_eta_candidate must be strictly between 0 and 1")
         if head_init_std <= 0.0:
             raise ValueError("head_init_std must be positive")
         if max_exposure_ev <= 0.0:
@@ -610,7 +615,6 @@ class RAWVLA(nn.Module):
             raise ValueError("wb_anchor_ev must be zero-sum so exposure remains a separate scalar")
         if wb_residual_scale_ev <= 0.0:
             raise ValueError("wb_residual_scale_ev must be positive")
-        self.initial_eta_candidate = float(initial_eta_candidate)
         self.head_init_std = float(head_init_std)
         self.max_exposure_ev = float(max_exposure_ev)
         self.fixed_update_alpha = (
@@ -660,9 +664,6 @@ class RAWVLA(nn.Module):
             self.state_gru = nn.GRUCell(input_size=128, hidden_size=self.state_dim)
 
             head_input_dim = 128 + self.state_dim + 64
-            self.denoise_head = nn.Sequential(
-                nn.Linear(head_input_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 1)
-            )
             self.color_head = nn.Sequential(
                 nn.Linear(head_input_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 9)
             )
@@ -671,7 +672,7 @@ class RAWVLA(nn.Module):
             )
             gate_input_dim = 128 + 64 + 32 + self.state_dim
             self.update_gate = nn.Sequential(
-                nn.Linear(gate_input_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 3)
+                nn.Linear(gate_input_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 2)
             )
         else:
             if self.state_dim < 2:
@@ -697,10 +698,10 @@ class RAWVLA(nn.Module):
                 nn.SiLU(inplace=True),
             )
             # Split mode uses one shared seven-parameter tone curve, so the
-            # previous luma state has eta + exposure + seven tone coordinates.
+            # The previous luma state has exposure + seven tone coordinates.
             # Previous relative WB/CCM contributes eight chroma coordinates.
             self.luma_theta_encoder = nn.Sequential(
-                nn.Linear(9, 64), nn.SiLU(inplace=True), nn.Linear(64, 32), nn.SiLU(inplace=True)
+                nn.Linear(8, 64), nn.SiLU(inplace=True), nn.Linear(64, 32), nn.SiLU(inplace=True)
             )
             self.chroma_theta_encoder = nn.Sequential(
                 nn.Linear(8, 64), nn.SiLU(inplace=True), nn.Linear(64, 32), nn.SiLU(inplace=True)
@@ -738,9 +739,6 @@ class RAWVLA(nn.Module):
             # recurrent state only.
             luma_head_dim = 128 + recurrent_luma_dim
             chroma_head_dim = 128 + recurrent_chroma_dim
-            self.denoise_head = nn.Sequential(
-                nn.Linear(luma_head_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 1)
-            )
             self.exposure_head = nn.Sequential(
                 nn.Linear(luma_head_dim, 128), nn.SiLU(inplace=True), nn.Linear(128, 1)
             )
@@ -755,7 +753,7 @@ class RAWVLA(nn.Module):
             self.luma_update_gate = nn.Sequential(
                 nn.Linear(128 + 64 + 32 + recurrent_luma_dim, 128),
                 nn.SiLU(inplace=True),
-                nn.Linear(128, 3),
+                nn.Linear(128, 2),
             )
             self.chroma_update_gate = nn.Sequential(
                 nn.Linear(64 + 32 + recurrent_chroma_dim, 128),
@@ -785,8 +783,6 @@ class RAWVLA(nn.Module):
         self._initialize_heads()
 
     def _initialize_heads(self) -> None:
-        eta_bias = math.log(self.initial_eta_candidate / (1.0 - self.initial_eta_candidate))
-        _tiny_init(self.denoise_head[-1], bias=eta_bias, std=self.head_init_std)
         if self.split_luma_chroma_condition:
             _tiny_init(self.exposure_head[-1], std=self.head_init_std)
             _tiny_init(self.chroma_head[-1], std=self.head_init_std)
@@ -856,7 +852,7 @@ class RAWVLA(nn.Module):
 
     def _predict_theta(self, condition: Tensor, chroma_condition: Tensor | None = None) -> RAWVLATheta:
         batch = condition.shape[0]
-        eta = torch.sigmoid(self.denoise_head(condition))
+        eta = condition.new_full((batch, 1), FIXED_DENOISE_ETA)
         if not self.split_luma_chroma_condition:
             color_raw = self.color_head(condition)
             exposure_raw = color_raw[:, 0:1]
@@ -880,7 +876,6 @@ class RAWVLA(nn.Module):
         )
         luma = torch.cat(
             (
-                theta.eta_denoise,
                 theta.exposure_ev / self.max_exposure_ev,
                 (theta.tone_logits[:, :1] / 2.0).flatten(1),
             ),
@@ -1062,7 +1057,7 @@ class RAWVLA(nn.Module):
             luma_gates = torch.sigmoid(self.luma_update_gate(luma_gate_condition))
             chroma_gate = torch.sigmoid(self.chroma_update_gate(chroma_gate_condition))
             update_gate = torch.cat(
-                (luma_gates[:, 0:2], chroma_gate, luma_gates[:, 2:3]), dim=1
+                (luma_gates[:, 0:1], chroma_gate, luma_gates[:, 1:2]), dim=1
             )
         if self.fixed_update_alpha is not None:
             update_gate = torch.full_like(update_gate, self.fixed_update_alpha)

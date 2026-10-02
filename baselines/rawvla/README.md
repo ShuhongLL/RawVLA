@@ -16,7 +16,7 @@ The implementation includes:
 - mean, standard-deviation, and learned-attention feature pooling;
 - separate absolute-luminance and scale-invariant log-chroma descriptors;
 - separate luminance and chroma GRUs packed into one compact recurrent state;
-- group-wise denoise/exposure/chroma/tone update gates;
+- group-wise exposure/chroma/tone update gates;
 - a scalar exposure gain, a fused WB/CCM color matrix, and monotonic Bernstein tone operators;
 - optional current-frame local color and tone residuals (both disabled by default).
 
@@ -29,8 +29,10 @@ absolute brightness cannot leak into the WB/CCM predictor through recurrent
 state. The legacy shared-condition architecture remains loadable for existing
 checkpoints.
 
-The explicit ISP operating point contains one denoise strength, one scalar
-exposure gain, eight scale-free WB/CCM color coordinates, and tone coordinates.
+The FFT burst merge uses a fixed correction strength of `0.5`; RAW-VLA does
+not predict a denoise coefficient. The predicted ISP operating point contains
+one scalar exposure gain, eight scale-free WB/CCM color coordinates, and tone
+coordinates.
 The split mode shares one seven-parameter monotonic tone curve across RGB, so
 the luminance path cannot create a color cast. Candidate heads are initialized
 with tiny random final weights so task gradients reach both recurrent paths

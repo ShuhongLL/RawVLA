@@ -51,7 +51,7 @@ with:
 
 ```text
 reliability = sigma2 / (abs(F_alt - F_ref)^2 + sigma2)
-0 <= eta_denoise <= 1
+eta_denoise = 0.5
 ```
 
 Intuition:
@@ -75,10 +75,9 @@ all historical-frame merge weights. Together they make `fft_cons` stronger than
 the first conservative setting, while still keeping the current frame as the
 reference anchor.
 
-For RAW-VLA v1, these values should be treated as fixed initialization choices
-for the deterministic FFT merge. The learnable denoise control is a single
-fusion strength `eta_denoise`, applied inside the merge to scale the historical
-correction. The model should not add a second image-space blend after `fft_cons`.
+For RAW-VLA, these values and `eta_denoise=0.5` are fixed choices for the
+deterministic FFT merge. The recurrent network does not predict a denoise
+coefficient and does not add a second image-space blend after `fft_cons`.
 
 For `fft_4_cons`, using frames `t-3, t-2, t-1, t`:
 
@@ -192,11 +191,6 @@ fft_5_cons: visibly stronger denoising, but edge/structure loss is more obvious
 fft_6/7/8_cons: diminishing denoising gains with steadily increasing edge loss
 ```
 
-The denoiser is always available through the same learned control path. The
-histogram/state branch predicts `eta_denoise`; when denoising is not useful, the
-model can drive `eta_denoise` toward zero, recovering the current RAW reference
-without a hand-written exposure rule.
-
-For contact-heavy or fast-motion moments, the same learned control can reduce
-`eta_denoise`, which suppresses historical correction and recovers the current
-frame anchor.
+RAW-VLA always applies this conservative merge at fixed strength `0.5`. The
+frequency reliability term still suppresses contributions from motion,
+misalignment, and real structural changes independently for each frequency.

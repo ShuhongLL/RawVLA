@@ -59,20 +59,20 @@
   <text x="350" y="150" class="stageTitle">2. RAW Temporal Denoise</text>
 
   <rect x="365" y="185" width="260" height="245" class="box denoise"/>
-  <text x="415" y="218" class="label">fft_cons Candidate</text>
+  <text x="427" y="218" class="label">fft_cons Merge</text>
   <text x="388" y="252" class="code">patch: 32x32, stride 16</text>
   <text x="388" y="278" class="code">window: Hann</text>
   <text x="388" y="304" class="code">FFT per RAW channel</text>
   <text x="388" y="330" class="code">r = sigma2 / (|F_i-F_t|^2+sigma2)</text>
-  <text x="388" y="356" class="code">F_out = F_t + sum w_i*r_i*(F_i-F_t)</text>
+  <text x="377" y="356" class="code">F_out = F_t + 0.5 sum w_i*r_i*(F_i-F_t)</text>
   <text x="388" y="392" class="small">current frame remains anchor</text>
 
   <rect x="365" y="520" width="260" height="185" class="box denoise"/>
-  <text x="408" y="553" class="label">RAW Denoise Mix</text>
-  <text x="388" y="587" class="code">x_fft = fft_cons(B_t)</text>
-  <text x="388" y="615" class="code">lambda from ISP state</text>
-  <text x="388" y="643" class="code">X_t^d = (1-lambda)X_t</text>
-  <text x="445" y="671" class="code">+ lambda*x_fft</text>
+  <text x="405" y="553" class="label">Fixed Burst Control</text>
+  <text x="388" y="587" class="code">eta_denoise = 0.5</text>
+  <text x="388" y="615" class="code">no predicted coefficient</text>
+  <text x="388" y="643" class="code">X_t^d = fft_cons(B_t, eta=0.5)</text>
+  <text x="388" y="671" class="code">reliability remains content-aware</text>
 
   <rect x="385" y="785" width="220" height="78" class="box raw"/>
   <text x="448" y="818" class="label">Output</text>
@@ -149,11 +149,11 @@
   <text x="1590" y="150" class="stageTitle">5. ISP Heads and Output</text>
 
   <rect x="1600" y="185" width="235" height="155" class="box head"/>
-  <text x="1650" y="218" class="label">Denoise Head</text>
-  <text x="1620" y="252" class="code">Linear(320,128)</text>
-  <text x="1620" y="278" class="code">SiLU</text>
-  <text x="1620" y="304" class="code">Linear(128,1)</text>
-  <text x="1620" y="328" class="code">eta_denoise</text>
+  <text x="1630" y="218" class="label">Fixed Burst Merge</text>
+  <text x="1620" y="252" class="code">eta_denoise = 0.5</text>
+  <text x="1620" y="278" class="code">no MLP / no parameters</text>
+  <text x="1620" y="304" class="code">not in recurrent summary</text>
+  <text x="1620" y="328" class="code">not smoothed</text>
 
   <rect x="1600" y="375" width="235" height="165" class="box head"/>
   <text x="1656" y="408" class="label">Color Head</text>
@@ -172,12 +172,12 @@
   <rect x="1600" y="790" width="235" height="120" class="box head"/>
   <text x="1628" y="823" class="label">Update + Smoothing</text>
   <text x="1620" y="857" class="code">Linear(352,128)</text>
-  <text x="1620" y="883" class="code">Linear(128,3)</text>
-  <text x="1620" y="907" class="code">alpha_K,A,T</text>
+  <text x="1620" y="883" class="code">Linear(128,2) legacy</text>
+  <text x="1620" y="907" class="code">alpha_A,T (split: E,C,T)</text>
 
   <rect x="1250" y="930" width="585" height="105" class="box isp"/>
   <text x="1340" y="963" class="label">Structured Adaptive ISP Operator</text>
-  <text x="1280" y="995" class="code">X_t^d -> RAW noise mix -> 3x3 color/gain -> bidirectional tone -> Y_t [B,3,H,W]</text>
+  <text x="1280" y="995" class="code">X_t^d -> 3x3 color/gain -> bidirectional tone -> Y_t [B,3,H,W]</text>
   <path d="M1718 910 C1718 945 1660 950 1600 950" class="line"/>
   <path d="M1600 340 C1510 420 1490 780 1515 930" class="soft"/>
   <path d="M1600 540 C1535 620 1525 790 1535 930" class="soft"/>

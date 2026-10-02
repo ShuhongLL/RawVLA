@@ -15,7 +15,7 @@ def test_rawvla_forward() -> None:
         print("torch is not installed; skipped RAW-VLA forward smoke test")
         return
 
-    from .rawvla import RAWVLA, summarize_theta
+    from .rawvla import FIXED_DENOISE_ETA, RAWVLA, summarize_theta
 
     torch.manual_seed(0)
     model = RAWVLA(
@@ -35,9 +35,14 @@ def test_rawvla_forward() -> None:
     assert out.rgb.shape == (2, 3, 24, 32)
     assert out.denoised_raw.shape == (2, 3, 24, 32)
     assert out.state.shape == (2, 32)
-    assert out.update_gate.shape == (2, 3)
+    assert out.update_gate.shape == (2, 2)
     assert out.spatial_attention.shape == (2, 1, 6, 8)
-    assert summarize_theta(out.theta).shape == (2, 31)
+    assert summarize_theta(out.theta).shape == (2, 30)
+    torch.testing.assert_close(
+        out.theta.eta_denoise,
+        torch.full_like(out.theta.eta_denoise, FIXED_DENOISE_ETA),
+    )
+    assert not hasattr(model, "denoise_head")
     torch.testing.assert_close(
         out.theta_candidate.ccm_matrix.diagonal(dim1=1, dim2=2),
         torch.ones(2, 3),
@@ -67,8 +72,6 @@ def test_rawvla_forward() -> None:
     assert model.color_head[0].weight.grad.abs().sum() > 0
     assert model.tone_head[0].weight.grad is not None
     assert model.tone_head[0].weight.grad.abs().sum() > 0
-    assert model.denoise_head[0].weight.grad is not None
-    assert model.denoise_head[0].weight.grad.abs().sum() > 0
     assert model.update_gate[0].weight.grad is not None
     assert model.update_gate[0].weight.grad.abs().sum() > 0
 
@@ -112,7 +115,7 @@ def test_split_luma_chroma_condition() -> None:
     except ModuleNotFoundError:
         return
 
-    from .rawvla import RAWChromaStatistics, RAWLuminanceStatistics, RAWVLA
+    from .rawvla import FIXED_DENOISE_ETA, RAWChromaStatistics, RAWLuminanceStatistics, RAWVLA
 
     torch.manual_seed(7)
     raw = 0.05 + 0.15 * torch.rand(2, 3, 16, 20)
@@ -140,11 +143,15 @@ def test_split_luma_chroma_condition() -> None:
     # Theta decoders consume only [fused current feature, updated hidden].
     # Descriptor embeddings already enter the fused feature and must not be
     # concatenated into the decoder a second time.
-    assert model.denoise_head[0].in_features == 128 + model.luma_state_dim
     assert model.exposure_head[0].in_features == 128 + model.luma_state_dim
     assert model.tone_head[0].in_features == 128 + model.luma_state_dim
     assert model.chroma_head[0].in_features == 128 + model.chroma_state_dim
-    assert output.update_gate.shape == (2, 4)
+    assert output.update_gate.shape == (2, 3)
+    torch.testing.assert_close(
+        output.theta_candidate.eta_denoise,
+        torch.full_like(output.theta_candidate.eta_denoise, FIXED_DENOISE_ETA),
+    )
+    assert not hasattr(model, "denoise_head")
     # Split mode uses one achromatic tone curve shared by all RGB channels.
     torch.testing.assert_close(output.theta_candidate.tone_logits[:, 0], output.theta_candidate.tone_logits[:, 1])
     torch.testing.assert_close(output.theta_candidate.tone_logits[:, 1], output.theta_candidate.tone_logits[:, 2])
@@ -279,7 +286,14 @@ def test_exposure_wb_ccm_parameterization() -> None:
     except ModuleNotFoundError:
         return
 
-    from .rawvla import MAX_EXPOSURE_EV, MAX_WB_EV, RAWVLA, smooth_theta, summarize_theta
+    from .rawvla import (
+        FIXED_DENOISE_ETA,
+        MAX_EXPOSURE_EV,
+        MAX_WB_EV,
+        RAWVLA,
+        smooth_theta,
+        summarize_theta,
+    )
 
     model = RAWVLA(
         spatial_width=4,
@@ -303,7 +317,8 @@ def test_exposure_wb_ccm_parameterization() -> None:
     torch.testing.assert_close(high.exposure_gain, torch.full_like(high.exposure_gain, 2.0**MAX_EXPOSURE_EV))
     torch.testing.assert_close(high.wb_ev.sum(dim=1), torch.zeros(1), atol=1.0e-6, rtol=0.0)
     assert high.wb_ev.abs().amax() <= MAX_WB_EV
-    torch.testing.assert_close(summarize_theta(high)[:, 1:2], torch.ones(1, 1))
+    torch.testing.assert_close(high.eta_denoise, torch.full_like(high.eta_denoise, FIXED_DENOISE_ETA))
+    torch.testing.assert_close(summarize_theta(high)[:, 0:1], torch.ones(1, 1))
 
     with torch.no_grad():
         final.bias.zero_()
@@ -311,11 +326,12 @@ def test_exposure_wb_ccm_parameterization() -> None:
     low = model._predict_theta(condition)
     torch.testing.assert_close(low.exposure_ev, torch.full_like(low.exposure_ev, -MAX_EXPOSURE_EV))
     torch.testing.assert_close(low.exposure_gain, torch.full_like(low.exposure_gain, 2.0**-MAX_EXPOSURE_EV))
-    torch.testing.assert_close(summarize_theta(low)[:, 1:2], -torch.ones(1, 1))
+    torch.testing.assert_close(low.eta_denoise, torch.full_like(low.eta_denoise, FIXED_DENOISE_ETA))
+    torch.testing.assert_close(summarize_theta(low)[:, 0:1], -torch.ones(1, 1))
 
     # The existing color gate smooths exposure in EV space, not linear-gain space.
     neutral = model.initial_theta(1, device=condition.device, dtype=condition.dtype)
-    gate = torch.tensor([[0.0, 0.5, 0.0]])
+    gate = torch.tensor([[0.5, 0.0]])
     halfway = smooth_theta(high, neutral, gate)
     torch.testing.assert_close(
         halfway.exposure_ev, torch.full_like(halfway.exposure_ev, MAX_EXPOSURE_EV / 2.0)
