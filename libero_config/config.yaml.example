@@ -1,7 +1,0 @@
-# Generate the usable, machine-local config with:
-# python scripts/configure_libero.py
-assets: /absolute/path/to/LIBERO/libero/libero/assets
-bddl_files: /absolute/path/to/LIBERO/libero/libero/bddl_files
-benchmark_root: /absolute/path/to/LIBERO/libero/libero
-datasets: /absolute/path/to/LIBERO/datasets
-init_states: /absolute/path/to/LIBERO/libero/libero/init_files

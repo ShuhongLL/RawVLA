@@ -51,7 +51,9 @@ conda env create -f environment-robotwin2.yml
 ```
 
 After installing StarVLA/LIBERO, generate the ignored machine-local LIBERO
-configuration with `python scripts/configure_libero.py`.
+simulator paths in `.local/libero/config.yaml` with
+`python scripts/configure_libero.py`. The versioned RAW-VLA training recipes
+live separately in `configs/libero/`.
 
 ## Checkpoints
 
@@ -76,7 +78,8 @@ PI0.5 under [`configs/libero`](configs/libero). Paths are resolved through
 
 ```bash
 export RAWVLA_ROOT="$PWD"
-conda activate starVLA
+export LIBERO_CONFIG_PATH="$RAWVLA_ROOT/.local/libero"
+conda activate starvla-libero
 cd starVLA
 accelerate launch --num_processes 1 \
   starVLA/training/train_starvla.py \

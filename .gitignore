@@ -13,7 +13,9 @@ htmlcov/
 .env
 .env.*
 !.env.example
-libero_config/config.yaml
+.local/
+# Legacy machine-local LIBERO path from older checkouts.
+/libero_config/
 .venv/
 venv/
 env/

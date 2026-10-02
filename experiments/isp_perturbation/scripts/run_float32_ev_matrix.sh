@@ -42,7 +42,7 @@ export HF_HOME="$ROOT/.cache/huggingface"
 export TRANSFORMERS_CACHE="$ROOT/.cache/huggingface/transformers"
 export TOKENIZERS_PARALLELISM=false NO_ALBUMENTATIONS_UPDATE=1
 export MUJOCO_GL=egl PYOPENGL_PLATFORM=egl LIBERO_SKIP_VIDEO=1
-export LIBERO_CONFIG_PATH="$ROOT/libero_config"
+export LIBERO_CONFIG_PATH="${LIBERO_CONFIG_PATH:-$ROOT/.local/libero}"
 export OPENPI_CONVERTED_ROOT="$OPENPI"
 export PALIGEMMA_TOKENIZER="$BASE/paligemma_tokenizer.model"
 unset DEBUG

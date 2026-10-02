@@ -23,7 +23,7 @@ for path in (STARVLA, PACKAGE_ROOT):
 
 os.environ.setdefault("MUJOCO_GL", "egl")
 os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
-os.environ.setdefault("LIBERO_CONFIG_PATH", str(ROOT / "libero_config"))
+os.environ.setdefault("LIBERO_CONFIG_PATH", str(ROOT / ".local" / "libero"))
 
 from libero.libero import benchmark, get_libero_path  # noqa: E402
 from libero.libero.envs import OffScreenRenderEnv  # noqa: E402

@@ -35,7 +35,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "libero_config" / "config.yaml",
+        default=Path(os.environ.get("LIBERO_CONFIG_PATH", ROOT / ".local" / "libero")) / "config.yaml",
         help="Machine-local config file to write.",
     )
     parser.add_argument(

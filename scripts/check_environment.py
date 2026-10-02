@@ -134,6 +134,8 @@ def main() -> int:
     parser.add_argument("profile", choices=sorted(PROFILES))
     parser.add_argument("--render", action="store_true", help="Also create a LIBERO or SAPIEN renderer where supported.")
     args = parser.parse_args()
+    if args.profile == "starvla-libero":
+        os.environ.setdefault("LIBERO_CONFIG_PATH", str(ROOT / ".local" / "libero"))
     add_source_paths()
     failures = check_imports(args.profile)
     if failures:

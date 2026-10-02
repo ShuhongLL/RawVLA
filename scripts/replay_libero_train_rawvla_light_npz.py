@@ -26,6 +26,7 @@ for path in (RAWVLA_BENCH_ROOT, STARVLA_ROOT, OPENVLA_OFT_ROOT):
 
 os.environ.setdefault("MUJOCO_GL", "egl")
 os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
+os.environ.setdefault("LIBERO_CONFIG_PATH", str(ROOT / ".local" / "libero"))
 
 from libero.libero import benchmark, get_libero_path  # noqa: E402
 try:  # Newer LIBERO releases download assets into a user cache.

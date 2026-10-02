@@ -24,16 +24,18 @@ Transformers 4.57, MuJoCo 3.2.3, and robosuite 1.4.0.
 ```bash
 conda env create -f environment-libero.yml
 conda activate starvla-libero
-python -m pip install -e ./third_party/LIBERO
+python -m pip install --no-deps --no-build-isolation -e ./third_party/LIBERO
 python -m pip install --no-deps -e ./third_party/openvla-oft
 python -m pip install --no-deps -e ./starVLA
+export LIBERO_CONFIG_PATH="$PWD/.local/libero"
 python scripts/configure_libero.py
 ```
 
-`--no-deps` on the two VLA source installs preserves the tested dependency pins
-from the environment file instead of allowing their upstream metadata to
-downgrade PyTorch. The generated `libero_config/config.yaml` is machine-local
-and ignored by Git. Put demonstrations under the default `benchmark_data/`
+`--no-deps` on the source installs preserves the tested dependency pins
+from the environment file. The LIBERO editable install uses the environment's
+setuptools without downloading a separate build environment. The generated
+`.local/libero/config.yaml` is machine-local and ignored by Git. Put
+demonstrations under the default `benchmark_data/`
 tree or pass `--datasets` to the configuration command.
 If LIBERO downloaded assets into a cache, the configurator detects
 `~/.cache/libero/assets`; override it with `--assets` or
