@@ -13,6 +13,7 @@ common_rawvla:
   luminance_weights: [1.0, 1.0, 1.0]
   luma_spatial_input: luma
   max_exposure_ev: 6.0
+  burst_denoise_eta: 0.5
   fixed_update_alpha: 1.0
   exposure_loss_type: two_sided_l1
   exposure_target: 0.48

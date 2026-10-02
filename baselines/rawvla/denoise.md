@@ -51,7 +51,7 @@ with:
 
 ```text
 reliability = sigma2 / (abs(F_alt - F_ref)^2 + sigma2)
-eta_denoise = 0.5
+eta_denoise = config.burst_denoise_eta  # default: 0.5
 ```
 
 Intuition:
@@ -75,9 +75,9 @@ all historical-frame merge weights. Together they make `fft_cons` stronger than
 the first conservative setting, while still keeping the current frame as the
 reference anchor.
 
-For RAW-VLA, these values and `eta_denoise=0.5` are fixed choices for the
-deterministic FFT merge. The recurrent network does not predict a denoise
-coefficient and does not add a second image-space blend after `fft_cons`.
+For RAW-VLA, `eta_denoise` is a static run-level hyperparameter configured by
+`burst_denoise_eta` (default `0.5`). The recurrent network does not predict it
+and does not add a second image-space blend after `fft_cons`.
 
 For `fft_4_cons`, using frames `t-3, t-2, t-1, t`:
 

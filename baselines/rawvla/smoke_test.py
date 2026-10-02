@@ -341,6 +341,37 @@ def test_exposure_wb_ccm_parameterization() -> None:
     )
 
 
+def test_configurable_burst_denoise_eta() -> None:
+    try:
+        import torch
+    except ModuleNotFoundError:
+        return
+
+    from .rawvla import RAWVLA, smooth_theta, summarize_theta
+
+    configured_eta = 0.25
+    model = RAWVLA(
+        spatial_width=4,
+        hist_bins=4,
+        state_dim=8,
+        fft_patch_size=8,
+        fft_stride=4,
+        split_luma_chroma_condition=False,
+        burst_denoise_eta=configured_eta,
+        fixed_update_alpha=None,
+    )
+    condition = torch.zeros(2, 128 + 8 + 64)
+    candidate = model._predict_theta(condition)
+    previous = model.initial_theta(2, device=condition.device, dtype=condition.dtype)
+    previous.eta_denoise.fill_(0.9)
+    theta = smooth_theta(candidate, previous, torch.ones(2, 2))
+
+    expected = torch.full((2, 1), configured_eta)
+    torch.testing.assert_close(candidate.eta_denoise, expected)
+    torch.testing.assert_close(theta.eta_denoise, expected)
+    assert summarize_theta(theta).shape == (2, 30)
+
+
 if __name__ == "__main__":
     test_rawvla_forward()
     test_fft_identity_fallback()
@@ -349,4 +380,5 @@ if __name__ == "__main__":
     test_monotonic_bernstein_tone()
     test_exposure_prior_loss()
     test_exposure_wb_ccm_parameterization()
+    test_configurable_burst_denoise_eta()
     print("RAW-VLA smoke tests passed")

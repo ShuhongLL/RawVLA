@@ -7,7 +7,7 @@ streaming states:
 
 * ``state`` is a GRU state for exposure/noise trends and adaptation hysteresis.
 * ``theta`` is the explicit color/tone ISP operating point; its compatibility
-  field for burst strength is always the fixed value ``0.5``.
+  field for burst strength carries a configured static value (default ``0.5``).
 
 The downstream task loss is intentionally external to this module.  No
 Self-Boost or clean-image reconstruction objective is used here.
@@ -25,7 +25,10 @@ from torch.nn import functional as F
 
 
 DEFAULT_EXPOSURE_TARGET = 0.48
-FIXED_DENOISE_ETA = 0.5
+DEFAULT_DENOISE_ETA = 0.5
+# Backward-compatible alias for downstream imports. The value is static within
+# a run, but can now be selected with ``burst_denoise_eta`` in the config.
+FIXED_DENOISE_ETA = DEFAULT_DENOISE_ETA
 MAX_EXPOSURE_EV = 6.0
 MAX_WB_EV = 1.0
 # Backward-compatible public alias. The revised model uses this range only for
@@ -75,7 +78,7 @@ class RAWVLATheta:
     independent of image resolution.
     """
 
-    eta_denoise: Tensor  # [B, 1], fixed to FIXED_DENOISE_ETA
+    eta_denoise: Tensor  # [B, 1], configured static burst merge strength
     exposure_ev: Tensor  # [B, 1], achromatic exposure in EV
     wb_ev: Tensor  # [B, 3], zero-sum relative white balance in EV
     ccm_matrix: Tensor  # [B, 3, 3], unit diagonal with bounded off-diagonals
@@ -109,12 +112,21 @@ class RAWVLAOutput:
     spatial_attention: Tensor
 
 
-def neutral_theta(batch_size: int, *, device: torch.device, dtype: torch.dtype) -> RAWVLATheta:
+def neutral_theta(
+    batch_size: int,
+    *,
+    device: torch.device,
+    dtype: torch.dtype,
+    denoise_eta: float = DEFAULT_DENOISE_ETA,
+) -> RAWVLATheta:
     """Return an identity-like ISP state for a new sequence."""
+
+    if not 0.0 <= denoise_eta <= 1.0:
+        raise ValueError("denoise_eta must be in [0, 1]")
 
     return RAWVLATheta(
         eta_denoise=torch.full(
-            (batch_size, 1), FIXED_DENOISE_ETA, device=device, dtype=dtype
+            (batch_size, 1), denoise_eta, device=device, dtype=dtype
         ),
         exposure_ev=torch.zeros(batch_size, 1, device=device, dtype=dtype),
         wb_ev=torch.zeros(batch_size, 3, device=device, dtype=dtype),
@@ -182,9 +194,9 @@ def smooth_theta(candidate: RAWVLATheta, previous: RAWVLATheta, gate: Tensor) ->
         return old + alpha * (new - old)
 
     return RAWVLATheta(
-        eta_denoise=candidate.eta_denoise.new_full(
-            candidate.eta_denoise.shape, FIXED_DENOISE_ETA
-        ),
+        # Static hyperparameter: take the current model's candidate value and
+        # never blend it with a potentially stale previous checkpoint state.
+        eta_denoise=candidate.eta_denoise,
         exposure_ev=blend(previous.exposure_ev, candidate.exposure_ev, gate_e),
         wb_ev=blend(previous.wb_ev, candidate.wb_ev, gate_c),
         ccm_matrix=blend(previous.ccm_matrix, candidate.ccm_matrix, gate_c),
@@ -576,6 +588,7 @@ class RAWVLA(nn.Module):
         use_local_tone: bool = False,
         fft_patch_size: int = 32,
         fft_stride: int = 16,
+        burst_denoise_eta: float = DEFAULT_DENOISE_ETA,
         head_init_std: float = 1.0e-3,
         max_exposure_ev: float = MAX_EXPOSURE_EV,
         fixed_update_alpha: float | None = 1.0,
@@ -604,6 +617,8 @@ class RAWVLA(nn.Module):
             raise ValueError("luma_spatial_input must be 'luma' or 'rgb'")
         if head_init_std <= 0.0:
             raise ValueError("head_init_std must be positive")
+        if not 0.0 <= burst_denoise_eta <= 1.0:
+            raise ValueError("burst_denoise_eta must be in [0, 1]")
         if max_exposure_ev <= 0.0:
             raise ValueError("max_exposure_ev must be positive")
         if fixed_update_alpha is not None and not 0.0 < fixed_update_alpha <= 1.0:
@@ -616,6 +631,7 @@ class RAWVLA(nn.Module):
         if wb_residual_scale_ev <= 0.0:
             raise ValueError("wb_residual_scale_ev must be positive")
         self.head_init_std = float(head_init_std)
+        self.burst_denoise_eta = float(burst_denoise_eta)
         self.max_exposure_ev = float(max_exposure_ev)
         self.fixed_update_alpha = (
             None if fixed_update_alpha is None else float(fixed_update_alpha)
@@ -797,7 +813,12 @@ class RAWVLA(nn.Module):
         return torch.zeros(batch_size, self.state_dim, device=device, dtype=dtype)
 
     def initial_theta(self, batch_size: int, *, device: torch.device, dtype: torch.dtype) -> RAWVLATheta:
-        theta = neutral_theta(batch_size, device=device, dtype=dtype)
+        theta = neutral_theta(
+            batch_size,
+            device=device,
+            dtype=dtype,
+            denoise_eta=self.burst_denoise_eta,
+        )
         theta.wb_ev = self.wb_anchor_ev.to(device=device, dtype=dtype).expand(batch_size, -1).clone()
         return theta
 
@@ -852,7 +873,7 @@ class RAWVLA(nn.Module):
 
     def _predict_theta(self, condition: Tensor, chroma_condition: Tensor | None = None) -> RAWVLATheta:
         batch = condition.shape[0]
-        eta = condition.new_full((batch, 1), FIXED_DENOISE_ETA)
+        eta = condition.new_full((batch, 1), self.burst_denoise_eta)
         if not self.split_luma_chroma_condition:
             color_raw = self.color_head(condition)
             exposure_raw = color_raw[:, 0:1]

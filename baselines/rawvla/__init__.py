@@ -3,6 +3,7 @@
 try:
     from .rawvla import (
         DEFAULT_EXPOSURE_TARGET,
+        DEFAULT_DENOISE_ETA,
         FFTConservativeMerge,
         FIXED_DENOISE_ETA,
         MAX_EXPOSURE_EV,
@@ -25,6 +26,7 @@ except ModuleNotFoundError as exc:  # Keep repository metadata importable withou
     if exc.name != "torch":
         raise
     FFTConservativeMerge = None
+    DEFAULT_DENOISE_ETA = None
     FIXED_DENOISE_ETA = None
     DEFAULT_EXPOSURE_TARGET = None
     MAX_EXPOSURE_EV = None
@@ -45,6 +47,7 @@ except ModuleNotFoundError as exc:  # Keep repository metadata importable withou
 
 __all__ = [
     "DEFAULT_EXPOSURE_TARGET",
+    "DEFAULT_DENOISE_ETA",
     "FFTConservativeMerge",
     "FIXED_DENOISE_ETA",
     "MAX_EXPOSURE_EV",

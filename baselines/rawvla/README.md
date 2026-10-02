@@ -29,8 +29,8 @@ absolute brightness cannot leak into the WB/CCM predictor through recurrent
 state. The legacy shared-condition architecture remains loadable for existing
 checkpoints.
 
-The FFT burst merge uses a fixed correction strength of `0.5`; RAW-VLA does
-not predict a denoise coefficient. The predicted ISP operating point contains
+The FFT burst merge uses the static config value `burst_denoise_eta` (default
+`0.5`); RAW-VLA does not predict a denoise coefficient. The predicted ISP operating point contains
 one scalar exposure gain, eight scale-free WB/CCM color coordinates, and tone
 coordinates.
 The split mode shares one seven-parameter monotonic tone curve across RGB, so
@@ -65,6 +65,7 @@ model = RAWVLA(
     luminance_weights=(1.0, 1.0, 1.0),
     luma_spatial_input="luma",
     max_exposure_ev=6.0,
+    burst_denoise_eta=0.5,
     fixed_update_alpha=1.0,
 )
 raw_burst = torch.rand(2, 6, 3, 224, 224)  # [B, K, RGB, H, W]

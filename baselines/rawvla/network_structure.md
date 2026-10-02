@@ -155,7 +155,7 @@ z_t   = concat(g_t, e_t^H)
 The recurrent branch additionally receives a compact embedding of the previous
 explicit ISP operating point. For the global-only v1, `Summary(Theta)` is the
 vector of scalar-exposure, fused-WB/CCM, and tone controls. Burst merge strength
-is fixed and therefore is not part of the recurrent descriptor. If local
+is configured statically and therefore is not part of the recurrent descriptor. If local
 parameter maps are enabled later, summarize them with channel-wise
 spatial statistics rather than flattening full-resolution maps:
 
@@ -186,8 +186,8 @@ where `F_t` is the FFT of the current RAW patch and `F_i` is the FFT of a histor
 
 ### 3.2 Fixed Control
 
-RAW-VLA uses a fixed historical-correction strength inside `fft_cons` and does
-not predict it from the image or recurrent state.
+RAW-VLA uses a configured static historical-correction strength inside
+`fft_cons` and does not predict it from the image or recurrent state.
 
 ```text
 F_out = F_t + eta_denoise * sum_i w_i * r_i * (F_i - F_t)
@@ -195,7 +195,7 @@ r_i = sigma2 / (abs(F_i - F_t)^2 + sigma2)
 X_t^d = overlap_add(IFFT(F_out))
 ```
 
-where `eta_denoise = 0.5`. This preserves the burst + local FFT merge design
+where `eta_denoise = config.burst_denoise_eta` (default `0.5`). This preserves the burst + local FFT merge design
 from `denoise.md` while removing the denoise head and its recurrent state.
 
 Avoid adding a second image-space blend after `fft_cons`, because that only
@@ -345,7 +345,7 @@ RAW-VLA keeps the same principle:
 
 ```text
 rgb_raw burst
-  -> RAW temporal denoise with fixed eta_denoise=0.5
+  -> RAW temporal denoise with static config eta_denoise (default 0.5)
   -> Spatial/Histogram/State conditioning
   -> Structured ISP heads
        color head   -> global 3x3 + optional local residual
@@ -505,10 +505,10 @@ retained in `Theta_t`.
 
 ### 7.1.4 Fixed Burst Merge
 
-There is no denoise-control head. The RAW-domain operator uses a constant:
+There is no denoise-control head. The RAW-domain operator uses a config value:
 
 ```text
-x_d = fft_cons(raw_burst, eta_denoise=0.5)
+x_d = fft_cons(raw_burst, eta_denoise=config.burst_denoise_eta)
 ```
 
 Optional local detail map:
@@ -699,7 +699,7 @@ b_alpha = -2.0  # sigmoid ~= 0.12
 ### 7.2 Raw Noise/Detail Operator
 
 `fft_cons` remains a deterministic, differentiable RAW operator. Its
-historical-correction strength is fixed to `eta_denoise = 0.5`; reliability
+historical-correction strength is `config.burst_denoise_eta` (default `0.5`); reliability
 weights still suppress inconsistent history at each frequency.
 
 ### 7.3 Exposure and Fused WB/CCM Head
@@ -760,7 +760,7 @@ Initialization:
 
 ```text
 Theta_0:
-  eta_denoise = 0.5  # compatibility/output field, not predicted
+  eta_denoise = config.burst_denoise_eta  # compatibility/output field, not predicted
   A = identity
   tone = identity-like coefficients
 S_0 = zeros
@@ -771,7 +771,7 @@ Candidate-head and update-gate final weights use a small random initialization
 reach their preceding MLPs and the shared encoder/GRU. Neutral biases are kept
 for color and tone. The validated FFT reliability scale and history weights
 remain those of the `frequency_burst_merge` probe; the global correction
-multiplier is always `0.5`.
+multiplier is static within a run and defaults to `0.5`.
 
 ## 9. Structured Adaptive ISP Forward
 
@@ -804,7 +804,7 @@ def forward(raw_burst, state=None, theta_prev=None):
     theta = smooth(theta_hat, theta_prev, alpha)
 
     # Burst correction is deterministic; RAW-VLA does not predict its strength.
-    x_d = fft_cons(raw_burst, eta_denoise=0.5)
+    x_d = fft_cons(raw_burst, eta_denoise=config.burst_denoise_eta)
     z = apply_exposure_wb_ccm(x_d, theta.exposure, theta.color)
     y = apply_bidirectional_tone(z, theta.tone)
 
@@ -845,7 +845,7 @@ this version.
 2. Implement histogram descriptor and histogram encoder.
 3. Implement spatial encoder, GRU state, parameter heads, and update gate.
 4. Implement scalar exposure plus the global fused WB/CCM matrix and bidirectional tone mapping.
-5. Fix `eta_denoise=0.5` inside `fft_cons` and exclude it from prediction/state.
+5. Configure static `burst_denoise_eta` and exclude it from prediction/state.
 6. Train/evaluate with frozen VLA first, then optionally jointly tune the frontend.
 
 ## 12. Key Design Decisions
