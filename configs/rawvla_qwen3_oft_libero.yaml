@@ -52,6 +52,7 @@ framework:
     exposure_loss_type: two_sided_l1
     exposure_objective_clamp: ste
     max_exposure_ev: 6.0
+    burst_denoise_eta: 0.5
     fixed_update_alpha: 1.0
     chroma_prior_enabled: true
     chroma_prior_weight: 0.001
