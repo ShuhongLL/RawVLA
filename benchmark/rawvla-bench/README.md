@@ -1,10 +1,9 @@
 # RAWVLA-Bench-Light LIBERO
 
 This folder contains the standalone LIBERO part of the `rawvla-bench-light`
-setting. It implements the lighting setting from
-`benchmark/docs/RawVLABench.md`: paired LIBERO rollouts under five
-simulator-side lighting domains, followed by the fixed LIBERO RGB-to-pseudo-RAW
-unprocess path and a fixed RAW sensor-noise model.
+setting: paired LIBERO rollouts under five simulator-side lighting domains,
+followed by the fixed LIBERO RGB-to-pseudo-RAW unprocess path and a fixed RAW
+sensor-noise model.
 
 The benchmark is not the previous ISP perturbation setting. The simulator
 lighting is changed before rendering; the fixed unprocess/default-ISP path is
@@ -38,10 +37,9 @@ The released manifest name is `rawvla-bench-light-libero-v1`.
 
 The current LIBERO v1 lighting domains are defined in
 `rawvla_bench/lighting.py` as `LIGHTING_DOMAIN_CONFIGS`. Manifest construction
-follows `benchmark/docs/RawVLABench.md`: for each
-`(suite, task_id, base_seed, lighting_domain)`, one value is sampled once from
-`Uniform(ev_min, ev_max)` with the fixed benchmark seed and then frozen in
-the manifest file.
+uses the following protocol: for each `(suite, task_id, base_seed,
+lighting_domain)`, one value is sampled once from `Uniform(ev_min, ev_max)`
+with the fixed benchmark seed and then frozen in the manifest file.
 
 | Domain | EV range | Rig | Agentview table flood | RAW full-well pressure |
 |---|---:|---|---:|---:|

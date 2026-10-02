@@ -100,6 +100,9 @@ playground/Datasets/
 *.tif
 *.tiff
 
+# Local/internal documentation
+docs/
+
 # Local machine and cluster submission files
 submit_info*.yaml
 submit_info*.md

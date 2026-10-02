@@ -113,10 +113,3 @@ uv run python ../../scripts/check_environment.py groot
 For architecture-specific NVIDIA platforms, follow the deployment instructions
 in the pinned GR00T checkout instead of mixing those dependencies into another
 RAW-VLA environment.
-
-## Exact snapshots
-
-`benchmark/docs/env_repro/` contains package snapshots from the tested StarVLA
-and RoboTwin environments. They are auditing aids, not a replacement for the
-short, reviewed environment files above: exact exports can include platform
-build identifiers that do not solve on another machine.
