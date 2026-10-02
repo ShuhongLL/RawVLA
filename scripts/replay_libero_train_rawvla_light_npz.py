@@ -28,6 +28,10 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
 
 from libero.libero import benchmark, get_libero_path  # noqa: E402
+try:  # Newer LIBERO releases download assets into a user cache.
+    from libero.libero import get_assets_path  # type: ignore[attr-defined]  # noqa: E402
+except ImportError:  # Older releases only expose the configured assets path.
+    get_assets_path = None
 from libero.libero.envs import OffScreenRenderEnv  # noqa: E402
 import libero.libero.utils.utils as libero_utils  # noqa: E402
 from rawvla_bench.libero import apply_entry_lighting  # noqa: E402
@@ -163,7 +167,8 @@ def _make_env(task, seed: int):
 
 def _postprocess_demo_model_xml(xml: str) -> str:
     xml = libero_utils.postprocess_model_xml(xml, {})
-    libero_assets = str(Path(get_libero_path("assets")))
+    assets_path = get_assets_path() if get_assets_path is not None else get_libero_path("assets")
+    libero_assets = str(Path(assets_path))
     legacy_checkout = re.compile(
         r"/(?:Users|home)/[^/]+/workspace/libero-dev/chiliocosm"
     )
@@ -582,7 +587,7 @@ def _process_refs(refs: list[EpisodeRef], cfg: dict[str, Any], worker_id: int) -
 
 def _combine_manifests(out_root: Path, cfg: dict[str, Any], worker_results: list[str], benchmark_name: str) -> None:
     entries: list[dict[str, Any]] = []
-    for path in sorted((out_root / "_manifests").glob("worker_*.jsonl")):
+    for path in sorted((out_root / "_manifests").glob("*.jsonl")):
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 entries.append(json.loads(line))
@@ -650,6 +655,10 @@ def main() -> None:
     refs = _select_shard(refs, args.num_shards, args.shard_index)
     if args.max_episodes >= 0:
         refs = refs[: args.max_episodes]
+    if not refs:
+        raise FileNotFoundError(
+            f"No LIBERO episodes found under {args.hdf5_root} for suites={suites}"
+        )
     args.out_root.mkdir(parents=True, exist_ok=True)
     rgb_out_root = Path(args.rgb_out_root) if str(args.rgb_out_root) else None
     if rgb_out_root is not None:
@@ -702,6 +711,9 @@ def main() -> None:
             indent=2,
         )
     )
+    failed = sum(int(json.loads(item)["failed"]) for item in results)
+    if failed:
+        raise SystemExit(f"LIBERO replay failed for {failed} variant(s); inspect _manifests/*.jsonl")
 
 
 if __name__ == "__main__":

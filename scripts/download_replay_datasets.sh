@@ -58,5 +58,12 @@ hf download TianxingChen/RoboTwin2.0 \
   --max-workers "${MAX_WORKERS}"
 echo "[$(date -Is)] RoboTwin2.0 download complete"
 
+echo "[$(date -Is)] Extract RoboTwin2.0 task archives"
+while IFS= read -r -d '' archive; do
+  destination="$(dirname "${archive}")"
+  unzip -q -o "${archive}" -d "${destination}"
+done < <(find "${ROBOTWIN_DIR}/dataset" -type f -name 'aloha-agilex_clean_50.zip' -print0)
+echo "[$(date -Is)] RoboTwin2.0 extraction complete"
+
 printf "done\n" > "${STATUS_FILE}"
 echo "[$(date -Is)] all downloads complete"

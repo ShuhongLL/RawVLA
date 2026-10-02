@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 
 
@@ -26,6 +27,12 @@ def main() -> int:
         help="Directory containing downloaded LIBERO demonstrations.",
     )
     parser.add_argument(
+        "--assets",
+        type=Path,
+        default=None,
+        help="LIBERO assets directory. Defaults to the checkout, then the LIBERO cache.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=ROOT / "libero_config" / "config.yaml",
@@ -41,8 +48,15 @@ def main() -> int:
     libero_root = args.libero_root.expanduser().resolve()
     datasets = args.datasets.expanduser().resolve()
     output = args.output.expanduser().resolve()
+    assets = (args.assets.expanduser().resolve() if args.assets is not None else libero_root / "assets")
+    if not assets.exists():
+        cached_assets = Path(
+            os.environ.get("LIBERO_ASSETS_ROOT", Path.home() / ".cache" / "libero" / "assets")
+        ).expanduser().resolve()
+        if cached_assets.exists():
+            assets = cached_assets
     paths = {
-        "assets": libero_root / "assets",
+        "assets": assets,
         "bddl_files": libero_root / "bddl_files",
         "benchmark_root": libero_root,
         "datasets": datasets,

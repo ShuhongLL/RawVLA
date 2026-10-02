@@ -51,12 +51,18 @@ python scripts/build_rawvla_light_train_npz_cache.py \
 ## RoboTwin 2.0 clean expert replay
 
 ```bash
-python scripts/replay_robotwin2_clean_training.py --help
+python scripts/replay_robotwin2_clean_training.py \
+  --robotwin-root third_party/RoboTwin \
+  --dataset-root benchmark_data/robotwin2/dataset \
+  --output-root benchmark_data/robotwin2/clean_replay \
+  --task adjust_bottle --episodes 50 --episode-indices 0 \
+  --max-attempts 1
 ```
 
 The script replays saved joint trajectories through RoboTwin physics and checks
 render fidelity against the original training frames. Inputs are explicit CLI
-arguments; start with one selected episode.
+arguments; start with one selected episode. The dataset downloader extracts the
+downloaded task archives into the layout expected by this command.
 
 ## RoboTwin 2.0 paired-lighting replay
 

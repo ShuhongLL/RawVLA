@@ -35,6 +35,9 @@ from the environment file instead of allowing their upstream metadata to
 downgrade PyTorch. The generated `libero_config/config.yaml` is machine-local
 and ignored by Git. Put demonstrations under the default `benchmark_data/`
 tree or pass `--datasets` to the configuration command.
+If LIBERO downloaded assets into a cache, the configurator detects
+`~/.cache/libero/assets`; override it with `--assets` or
+`LIBERO_ASSETS_ROOT` when needed.
 
 Validate imports, RAW-VLA computation, and optional headless LIBERO rendering:
 
@@ -50,6 +53,9 @@ python scripts/replay_libero_train_rawvla_light_npz.py --help
 ```bash
 conda env create -f environment-robotwin2.yml
 conda activate robotwin
+ROBOTWIN_ASSETS_SOURCE=/path/to/existing/RoboTwin/assets \
+  bash scripts/setup_robotwin_assets.sh
+# Or omit ROBOTWIN_ASSETS_SOURCE to download and extract the official assets.
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
   python scripts/check_environment.py robotwin --render
@@ -58,8 +64,11 @@ python scripts/replay_robotwin2_paired_lighting_training.py --help
 ```
 
 The RoboTwin installer builds CuRobo and applies the SAPIEN/MPLib compatibility
-patches required by the pinned RoboTwin checkout. Download RoboTwin assets as
-described by its submodule before running an episode.
+patches required by the pinned RoboTwin checkout. Simulator assets are not
+stored in Git and require about 30 GB. `setup_robotwin_assets.sh` either links
+an existing complete asset tree or downloads and extracts the three official
+archives. Keep the activated environment's `bin` directory on `PATH`: CuRobo
+uses the environment's `ninja` executable when it must rebuild CUDA extensions.
 
 ## FastWAM
 

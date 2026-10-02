@@ -12,13 +12,16 @@ From the RAW-VLA repository root:
 git submodule update --init third_party/RoboTwin starVLA
 conda env create -f environment-robotwin2.yml
 conda activate robotwin
+# Download the official assets, or set ROBOTWIN_ASSETS_SOURCE to reuse them.
+bash scripts/setup_robotwin_assets.sh
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 ```
 
 The installer installs the pinned SAPIEN/MPLib stack, builds CuRobo 0.7.8, and
-applies the compatibility patches expected by the RoboTwin checkout. Download
-the benchmark assets using the instructions in `third_party/RoboTwin` before
-running an episode.
+applies the compatibility patches expected by the RoboTwin checkout. The asset
+setup script downloads and extracts the roughly 30 GB simulator asset set. To
+reuse an existing download instead, run
+`ROBOTWIN_ASSETS_SOURCE=/path/to/RoboTwin/assets bash scripts/setup_robotwin_assets.sh`.
 
 ## Validate
 

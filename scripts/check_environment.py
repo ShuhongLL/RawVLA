@@ -114,9 +114,19 @@ def libero_render_smoke() -> None:
 def robotwin_render_smoke() -> None:
     import sapien
 
+    required_assets = (
+        ROOT / "third_party" / "RoboTwin" / "assets" / "objects" / "objaverse" / "list.json",
+        ROOT / "third_party" / "RoboTwin" / "assets" / "embodiments" / "aloha-agilex",
+    )
+    missing = [str(path) for path in required_assets if not path.exists()]
+    if missing:
+        raise FileNotFoundError(
+            "RoboTwin simulator assets are missing; run "
+            "scripts/setup_robotwin_assets.sh. Missing: " + ", ".join(missing)
+        )
     renderer = sapien.SapienRenderer()
     del renderer
-    print("SAPIEN renderer construction passed")
+    print("RoboTwin asset validation and SAPIEN renderer construction passed")
 
 
 def main() -> int:
