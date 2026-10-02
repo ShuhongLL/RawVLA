@@ -41,6 +41,7 @@ from tqdm import tqdm
 from transformers import AutoProcessor, get_scheduler
 
 # Local Modules
+from starVLA.config_loader import load_config
 from starVLA.dataloader import build_dataloader
 from starVLA.model.framework.base_framework import build_framework
 from starVLA.model.framework.share_tools import apply_config_compat
@@ -983,7 +984,7 @@ if __name__ == "__main__":
     )
     args, clipargs = parser.parse_known_args()
 
-    cfg = OmegaConf.load(args.config_yaml)
+    cfg = load_config(args.config_yaml)
     dotlist = normalize_dotlist_args(clipargs)
     cli_cfg = OmegaConf.from_dotlist(dotlist)
     cfg = OmegaConf.merge(cfg, cli_cfg)
