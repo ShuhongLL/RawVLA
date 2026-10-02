@@ -89,13 +89,13 @@ def parse_bool(value):
 
 
 def _result_suffix_from_task_config(task_config):
-    if task_config == "demo_clean":
+    if task_config in {"demo_clean", "demo_clean_rgb_eval"}:
         return "clean"
-    if task_config == "demo_randomized":
+    if task_config in {"demo_randomized", "demo_randomized_no_light_rgb_eval"}:
         return "random"
     raise ValueError(
         f"Unsupported `task_config` for fixed result naming: {task_config}. "
-        "Expected one of: ['demo_clean', 'demo_randomized']."
+        "Expected a clean or randomized RoboTwin eval config."
     )
 
 

@@ -118,10 +118,8 @@ def _ensure_policy_symlink(robotwin_root: Path, policy_source_dir: Path) -> Path
     if policy_target.is_symlink():
         target_resolved = policy_target.resolve()
         if target_resolved != source_resolved:
-            raise RuntimeError(
-                f"Policy symlink conflict: {policy_target} -> {target_resolved}, "
-                f"expected -> {source_resolved}"
-            )
+            policy_target.unlink()
+            policy_target.symlink_to(source_resolved, target_is_directory=True)
         return policy_target
 
     raise RuntimeError(
@@ -227,8 +225,9 @@ def main(cfg: DictConfig):
         cfg.EVALUATION.skip_get_obs_within_replan,
     )
 
+    policy_python = os.environ.get("FASTWAM_POLICY_PYTHON") or os.environ.get("FASTWAM_PYTHON") or sys.executable
     cmd = [
-        sys.executable,
+        policy_python,
         "-u",
         "script/eval_policy.py",
         "--config",

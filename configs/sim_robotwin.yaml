@@ -17,6 +17,9 @@ EVALUATION:
   robotwin_root: third_party/RoboTwin
   policy_name: fastwam_policy
   task_name: null
+  phases: null
+  clean_task_config: demo_clean
+  random_task_config: demo_randomized
   task_config: demo_randomized
   instruction_type: unseen
   eval_num_episodes: 100

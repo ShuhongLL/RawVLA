@@ -2,7 +2,6 @@ import sapien.core as sapien
 import numpy as np
 import pdb
 from PIL import Image, ImageColor
-import open3d as o3d
 import json
 import transforms3d as t3d
 import cv2
@@ -13,6 +12,7 @@ import math
 from .._GLOBAL_CONFIGS import CONFIGS_PATH
 import os
 from sapien.sensor import StereoDepthSensor, StereoDepthSensorConfig
+from .raw_rgb10 import apply_isp_perturbation_from_env, unprocess_rgb_to_raw10_and_default_isp
 
 try:
     import pytorch3d.ops as torch3d_ops
@@ -321,11 +321,32 @@ class Camera:
         return res
 
     def get_rgb(self) -> dict:
-        rgba = self.get_rgba()
+        def _get_rgb_products(camera):
+            camera_rgba = camera.get_picture("Color")
+            render_rgb_float = np.clip(camera_rgba[:, :, :3].astype(np.float32), 0.0, 1.0)
+            raw10, raw_view8, default_isp = unprocess_rgb_to_raw10_and_default_isp(render_rgb_float)
+            render_rgb = np.rint(render_rgb_float * 255.0).astype(np.uint8)
+            isp_perturbed = apply_isp_perturbation_from_env(raw10, default_isp)
+            return {
+                "rgb": raw_view8,
+                "raw_rgb10": raw10,
+                "default_isp": default_isp,
+                "isp_perturbed": isp_perturbed,
+                "render_rgb": render_rgb,
+            }
+
         rgb = {}
-        for camera_name, camera_data in rgba.items():
-            rgb[camera_name] = {}
-            rgb[camera_name]["rgb"] = camera_data["rgba"][:, :, :3]  # Exclude alpha channel
+
+        if self.collect_wrist_camera:
+            rgb["left_camera"] = _get_rgb_products(self.left_camera)
+            rgb["right_camera"] = _get_rgb_products(self.right_camera)
+
+        for camera, camera_name in zip(self.static_camera_list, self.static_camera_name):
+            if camera_name == "head_camera":
+                if self.collect_head_camera:
+                    rgb[camera_name] = _get_rgb_products(camera)
+            else:
+                rgb[camera_name] = _get_rgb_products(camera)
         return rgb
     
     # Get Camera RGBA

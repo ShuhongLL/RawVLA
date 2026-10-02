@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import inspect
+import os
 from typing import Any
 
 import torch
@@ -189,11 +190,12 @@ def load_wan22_ti2v_5b_components(
     text_encoder_path: str | None = None
     tokenizer_path: str | None = None
     if load_text_encoder:
+        text_encoder_device = os.environ.get("FASTWAM_TEXT_ENCODER_DEVICE", device)
         text_encoder = _load_registered_model(
             text_config.path,
             "wan_video_text_encoder",
             torch_dtype=torch_dtype,
-            device=device,
+            device=text_encoder_device,
         )
         tokenizer = HuggingfaceTokenizer(
             name=tokenizer_config.path,

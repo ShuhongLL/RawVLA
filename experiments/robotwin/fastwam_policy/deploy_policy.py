@@ -220,9 +220,10 @@ class WorldActionRobotWinPolicy:
 
     def _build_robotwin_image_tensor(self, observation: Dict[str, Any]) -> torch.Tensor:
         obs_data = observation["observation"]
-        head = _resize_rgb(obs_data["head_camera"]["rgb"], (320, 256))
-        left = _resize_rgb(obs_data["left_camera"]["rgb"], (160, 128))
-        right = _resize_rgb(obs_data["right_camera"]["rgb"], (160, 128))
+        image_obs_key = os.environ.get("ROBOTWIN_IMAGE_OBS_KEY", "rgb")
+        head = _resize_rgb(obs_data["head_camera"][image_obs_key], (320, 256))
+        left = _resize_rgb(obs_data["left_camera"][image_obs_key], (160, 128))
+        right = _resize_rgb(obs_data["right_camera"][image_obs_key], (160, 128))
         bottom = np.concatenate([left, right], axis=1)
         image = np.concatenate([head, bottom], axis=0)  # [384, 320, 3]
 

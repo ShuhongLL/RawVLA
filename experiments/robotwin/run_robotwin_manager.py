@@ -83,6 +83,22 @@ def _load_all_tasks() -> list[str]:
     return dedup_tasks
 
 
+def _split_csv(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value).strip()
+    if text.startswith("[") and text.endswith("]"):
+        text = text[1:-1]
+    items = []
+    for item in text.split(","):
+        cleaned = item.strip().strip("\"'")
+        if cleaned:
+            items.append(cleaned)
+    return items
+
+
 def _parse_success_rate(result_file: Path) -> float:
     if not result_file.exists():
         raise FileNotFoundError(f"Result file not found: {result_file}")
@@ -170,7 +186,17 @@ def main(cfg: DictConfig):
     if task_name_cfg is None or str(task_name_cfg).strip() == "":
         tasks = _load_all_tasks()
     else:
-        tasks = [str(task_name_cfg)]
+        tasks = _split_csv(task_name_cfg)
+    if len(tasks) == 0:
+        raise ValueError("No evaluation tasks selected.")
+
+    phases = _split_csv(cfg.EVALUATION.get("phases"))
+    if len(phases) == 0:
+        phases = ["clean", "random"]
+    supported_phases = {"clean", "random"}
+    unknown_phases = sorted(set(phases) - supported_phases)
+    if unknown_phases:
+        raise ValueError(f"Unsupported EVALUATION.phases: {unknown_phases}. Expected clean/random.")
 
     extra_overrides = _collect_worker_overrides()
 
@@ -182,9 +208,11 @@ def main(cfg: DictConfig):
     running_states: list[RunningState] = []
 
     phase_to_task_config = {
-        "clean": "demo_clean",
-        "random": "demo_randomized",
+        "clean": str(cfg.EVALUATION.get("clean_task_config", "demo_clean")),
+        "random": str(cfg.EVALUATION.get("random_task_config", "demo_randomized")),
     }
+    first_phase = phases[0]
+    worker_python = os.environ.get("FASTWAM_WORKER_PYTHON") or os.environ.get("FASTWAM_PYTHON") or sys.executable
 
     def log(msg: str) -> None:
         line = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
@@ -196,7 +224,7 @@ def main(cfg: DictConfig):
     def build_cmd(*, task_name: str, gpu_id: int, phase: str) -> list[str]:
         task_config = phase_to_task_config[phase]
         cmd = [
-            sys.executable,
+            worker_python,
             str(SINGLE_ENTRY),
             f"ckpt={str(ckpt_path)}",
             f"gpu_id={gpu_id}",
@@ -255,7 +283,7 @@ def main(cfg: DictConfig):
     def try_launch_pending(gpu_id: int) -> None:
         while len(pending_tasks) > 0 and gpu_running_count(gpu_id) < max_tasks_per_gpu:
             task_name = pending_tasks.popleft()
-            running_states.append(launch_phase(task_name=task_name, gpu_id=gpu_id, phase="clean"))
+            running_states.append(launch_phase(task_name=task_name, gpu_id=gpu_id, phase=first_phase))
 
     def write_outputs() -> None:
         clean_mean = _mean_or_none([task_rates[t]["clean"] for t in tasks])
@@ -371,7 +399,7 @@ def main(cfg: DictConfig):
                 f"success_rate={success_rate:.4f}"
             )
 
-            if state.phase == "clean":
+            if state.phase == "clean" and "random" in phases:
                 running_states.append(launch_phase(
                     task_name=state.task_name,
                     gpu_id=gpu_id,

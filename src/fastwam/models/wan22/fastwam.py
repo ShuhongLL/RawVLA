@@ -1,5 +1,6 @@
 from typing import Any, Optional, Sequence, Union
 
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -82,6 +83,10 @@ class FastWAM(torch.nn.Module):
 
         self.device = torch.device(device)
         self.torch_dtype = torch_dtype
+        text_encoder_device = os.environ.get("FASTWAM_TEXT_ENCODER_DEVICE")
+        self.text_encoder_device = (
+            torch.device(text_encoder_device) if text_encoder_device else self.device
+        )
         self.loss_lambda_video = float(loss_lambda_video)
         self.loss_lambda_action = float(loss_lambda_action)
 
@@ -181,11 +186,14 @@ class FastWAM(torch.nn.Module):
         return model
 
     def to(self, *args, **kwargs):
-        super().to(*args, **kwargs)
+        if self.text_encoder_device == self.device:
+            super().to(*args, **kwargs)
         self.mot.to(*args, **kwargs)
         if self.text_encoder is not None:
-            self.text_encoder.to(*args, **kwargs)
+            self.text_encoder.to(device=self.text_encoder_device, dtype=self.torch_dtype)
         self.vae.to(*args, **kwargs)
+        if self.proprio_encoder is not None:
+            self.proprio_encoder.to(*args, **kwargs)
         return self
 
     @staticmethod
@@ -206,15 +214,18 @@ class FastWAM(torch.nn.Module):
                 "Set `load_text_encoder=true` or provide precomputed `context/context_mask`."
             )
         ids, mask = self.tokenizer(prompt, return_mask=True, add_special_tokens=True)
-        ids = ids.to(self.device)
-        mask = mask.to(self.device, dtype=torch.bool)
+        ids = ids.to(self.text_encoder_device)
+        mask = mask.to(self.text_encoder_device, dtype=torch.bool)
         prompt_emb = self.text_encoder(ids, mask)
         # FIXME: original implementation's zero padding is visible in cross-attn.
         seq_lens = mask.gt(0).sum(dim=1).long()
         for i, v in enumerate(seq_lens):
             prompt_emb[i, v:] = 0
         mask = torch.ones_like(mask)
-        return prompt_emb.to(device=self.device), mask
+        return (
+            prompt_emb.to(device=self.device, dtype=self.torch_dtype),
+            mask.to(device=self.device, dtype=torch.bool),
+        )
 
     def _append_proprio_to_context(
         self,
