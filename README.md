@@ -69,7 +69,7 @@ simulator paths in `.local/libero/config.yaml` with
 `python scripts/setup/configure_libero.py`. The versioned RAW-VLA training recipes
 live separately in `configs/libero/`.
 
-## 🧠 Checkpoints
+## 🧠 VLA Checkpoints
 
 Download the public StarVLA LIBERO checkpoints and their base models with:
 
