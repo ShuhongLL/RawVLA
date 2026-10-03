@@ -37,7 +37,9 @@ vision-language-action policies. This repository contains the RAW frontend,
 StarVLA integration, RAWVLA-Bench lighting transforms, LIBERO and RoboTwin 2.0
 evaluation adapters, and the replay code used to produce training trajectories.
 
-## Clone
+## 📦 Installation
+
+Clone the repository with its submodules:
 
 ```bash
 git clone --recurse-submodules https://github.com/ShuhongLL/RawVLA.git
@@ -49,7 +51,7 @@ git submodule update --init --recursive
 Several project-maintained submodules are branches of this repository. Their
 branch and pinned commit are documented in [SUBMODULES.md](SUBMODULES.md).
 
-## Environments
+### Conda environments
 
 The full system uses separate environments because StarVLA/LIBERO, RoboTwin,
 FastWAM, OpenVLA-OFT, and GR00T have incompatible dependency stacks. Complete
@@ -67,7 +69,7 @@ simulator paths in `.local/libero/config.yaml` with
 `python scripts/setup/configure_libero.py`. The versioned RAW-VLA training recipes
 live separately in `configs/libero/`.
 
-## Checkpoints
+## 🧠 Checkpoints
 
 Download the public StarVLA LIBERO checkpoints and their base models with:
 
@@ -80,7 +82,7 @@ python tools/checkpoints/validate_starvla_libero.py
 Set `STARVLA_ROOT=/custom/path/to/starVLA` when the StarVLA checkout is not at
 the repository default.
 
-## Training RAW-VLA
+## 🏋️ Training
 
 The public LIBERO configurations share
 [`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml) and contain
@@ -103,7 +105,7 @@ the base first and the selected backbone config second; command-line dotlist
 overrides remain highest priority. The VLA backbone is frozen and RAW-VLA is
 initialized from scratch.
 
-## Replay data
+## 🗂️ Replay Data
 
 Replay source code is part of the release. See [replay/README.md](replay/README.md)
 for data downloads and replay commands for:
@@ -115,7 +117,7 @@ for data downloads and replay commands for:
 Generated trajectories, datasets, checkpoints, and videos are intentionally
 excluded by `.gitignore`.
 
-## Evaluation
+## 📊 Evaluation
 
 The main public runners derive paths from the checkout and accept overrides via
 environment variables:
@@ -137,6 +139,22 @@ separate from RAWVLA-Bench under
 Physical-robot entry points are documented under
 [`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and
 LIBERO remain simulator integrations.
+
+## 📚 Citation
+
+If you use RawVLA or RawVLA-Bench, please cite the paper:
+
+```bibtex
+@article{liu2026rawvla,
+  title={RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation},
+  author={Liu, Shuhong and Zhou, Heng and Qian, Lingfeng and Fang, Yuhao and Hou, Xianbao and Zhou, Qianyu and Gu, Lin and Sui, Wei and Yang, Jianfei and Cui, Ziteng},
+  journal={arXiv preprint arXiv:2609.37530},
+  year={2026},
+  url={https://arxiv.org/abs/2609.37530}
+}
+```
+
+## ⚖️ License
 
 The root project is released under the MIT License. Third-party submodules
 retain their own licenses.
