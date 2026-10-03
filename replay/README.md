@@ -1,8 +1,8 @@
 # Replay pipelines
 
 Replay outputs are intentionally not stored in Git. By default they live under
-`benchmark_data/`, which is ignored. Every command below supports explicit
-input/output paths and should first be run with one episode or one worker.
+`benchmark_data/`, which is ignored. Replay commands support explicit
+input/output paths; begin with one episode or one worker before scaling up.
 
 Install the StarVLA/LIBERO environment for LIBERO replay and the RoboTwin
 environment for RoboTwin replay by following [`ENVIRONMENTS.md`](../ENVIRONMENTS.md).
@@ -40,17 +40,6 @@ python scripts/replay/replay_libero_train_rawvla_light_npz.py \
 Remove `--max-episodes 1` only after inspecting the generated manifest and NPZ
 schema. `--replay-mode states` is the reproducible default.
 
-## LIBERO RLDS conversion
-
-For existing modified LIBERO RLDS shards:
-
-```bash
-python scripts/replay/build_rawvla_light_train_npz_cache.py \
-  --data-root benchmark_data/libero/modified_libero_rlds \
-  --out-root benchmark_data/libero/rawvla_light_train_cache_npz \
-  --max-episodes 1 --workers 1
-```
-
 ## RoboTwin 2.0 clean expert replay
 
 ```bash
@@ -69,14 +58,32 @@ downloaded task archives into the layout expected by this command.
 
 ## RoboTwin 2.0 paired-lighting replay
 
+After successful clean replays, freeze their lighting assignments in a manifest,
+then run the paired replay against it:
+
 ```bash
-python scripts/replay/replay_robotwin2_paired_lighting_training.py --help
+python scripts/replay/build_robotwin2_lighting_train_manifest.py \
+  --clean-replay-root benchmark_data/robotwin2/clean_replay \
+  --dataset-root benchmark_data/robotwin2/dataset \
+  --output benchmark_data/robotwin2/lighting_train_manifest.json
+python scripts/replay/replay_robotwin2_paired_lighting_training.py \
+  --robotwin-root third_party/RoboTwin \
+  --manifest benchmark_data/robotwin2/lighting_train_manifest.json \
+  --output-root benchmark_data/robotwin2/paired_lighting_replay \
+  --num-workers 1 --worker-index 0
+python scripts/replay/replay_robotwin2_paired_lighting_training.py \
+  --robotwin-root third_party/RoboTwin \
+  --manifest benchmark_data/robotwin2/lighting_train_manifest.json \
+  --output-root benchmark_data/robotwin2/paired_lighting_replay \
+  --finalize-only
 ```
 
 This pipeline runs clean and randomized-light scenes with identical seeds,
 copies complete actor/articulation state at each capture time, and writes paired
 RGB/RAW trajectories. It requires the RAW camera additions in the pinned
-`third_party/RoboTwin` submodule.
+`third_party/RoboTwin` submodule. For a full dataset, use
+`--expected-entries 633` when generating the manifest to enforce the original
+episode count.
 
 ## Output contract
 

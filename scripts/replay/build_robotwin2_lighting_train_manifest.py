@@ -170,14 +170,23 @@ def main() -> None:
     parser.add_argument("--dataset-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seed", type=int, default=TRAIN_SEED)
+    parser.add_argument(
+        "--expected-entries", type=int,
+        help="Optional expected count of successful clean replay episodes.",
+    )
     args = parser.parse_args()
     manifest = build_manifest(
         clean_replay_root=args.clean_replay_root.resolve(),
         dataset_root=args.dataset_root.resolve(),
         seed=args.seed,
     )
-    if manifest["num_entries"] != 633:
-        raise ValueError(f"Expected 633 successful replay episodes, got {manifest['num_entries']}")
+    if not manifest["num_entries"]:
+        raise ValueError("No successful clean replay episodes found")
+    if args.expected_entries is not None and manifest["num_entries"] != args.expected_entries:
+        raise ValueError(
+            f"Expected {args.expected_entries} successful replay episodes, "
+            f"got {manifest['num_entries']}"
+        )
     atomic_json(args.output.resolve(), manifest)
     print(json.dumps({key: manifest[key] for key in ("num_entries", "task_counts", "domain_counts")}, indent=2))
 

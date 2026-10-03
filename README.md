@@ -1,32 +1,19 @@
-# RAW-VLA
+# 📷 RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation
+
+[Shuhong Liu](https://shuhongll.github.io/), Heng Zhou, Lingfeng Qian,
+Yuhao Fang, Xianbao Hou, Qianyu Zhou,
+[Lin Gu](https://sites.google.com/view/linguedu/home), Wei Sui,
+[Jianfei Yang](https://marsyang.site/), [Ziteng Cui](https://cuiziteng.github.io/)
+
+[Project Page](https://shuhongll.github.io/rawvla/) ·
+[Paper](https://arxiv.org/abs/2609.37530) ·
+[Code](https://github.com/ShuhongLL/RawVLA) ·
+[RawVLA-Bench](https://huggingface.co/datasets/ToferFish/RawVLA-Bench)
 
 RAW-VLA is a streaming, illumination-adaptive RAW image frontend for
 vision-language-action policies. This repository contains the RAW frontend,
 StarVLA integration, RAWVLA-Bench lighting transforms, LIBERO and RoboTwin 2.0
 evaluation adapters, and the replay code used to produce training trajectories.
-
-## Repository layout
-
-```text
-baselines/rawvla/                    RAW-VLA model implementation
-experiments/simulation/libero/      LIBERO benchmark, manifests, and runners
-experiments/simulation/robotwin/    RoboTwin setup, manifests, and backbones
-experiments/isp_perturbation/       legacy synthetic ISP perturbation studies
-experiments/real_robot/             physical-robot integration entry points
-starVLA/                             StarVLA integration (submodule)
-third_party/LIBERO/                  LIBERO simulator integration (submodule)
-third_party/RoboTwin/                RoboTwin 2.0 integration (submodule)
-third_party/openvla-oft/             OpenVLA-OFT dependency (submodule)
-third_party/FastWAM/                 FastWAM integration (submodule)
-third_party/Isaac-GR00T/             GR00T dependency (submodule)
-scripts/setup/                       environment and local setup
-scripts/training/                    training data and job preparation
-scripts/replay/                      dataset replay and conversion
-scripts/evaluation/                  evaluation runners and summaries
-replay/                              replay instructions and small manifests
-finetune/calibration/                default-ISP calibration utilities
-tools/checkpoints/                   checkpoint download and validation helpers
-```
 
 ## Clone
 
@@ -101,8 +88,7 @@ for data downloads and replay commands for:
 
 - LIBERO simulator re-rendering into paired RAW/RGB NPZ trajectories;
 - RoboTwin 2.0 clean expert replay;
-- RoboTwin 2.0 paired clean/random-light state-copy replay;
-- conversion of existing LIBERO RLDS shards into RAWVLA-Light NPZ data.
+- RoboTwin 2.0 paired clean/random-light state-copy replay.
 
 Generated trajectories, datasets, checkpoints, and videos are intentionally
 excluded by `.gitignore`.
