@@ -82,7 +82,9 @@ python tools/checkpoints/validate_starvla_libero.py
 Set `STARVLA_ROOT=/custom/path/to/starVLA` when the StarVLA checkout is not at
 the repository default.
 
-## 🗂️ Replay Data
+## 🗂️ RawVLA-Bench
+
+### Training Data
 
 The paired RAW/RGB training replay data is available directly from
 [RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench).
@@ -99,6 +101,24 @@ The LIBERO RAW files then live under
 `benchmark_data/RawVLA-Bench/data/libero/raw`; the paired RGB files and
 RoboTwin data are in the same download. To regenerate the trajectories from
 source demonstrations, see [replay/README.md](replay/README.md).
+
+### Evaluation Manifests
+
+The evaluation protocol is recorded in frozen simulator rollout manifests,
+not pre-rendered test trajectories. These JSON files are included in this
+GitHub repository, not in the Hugging Face training-data release:
+
+- [LIBERO full evaluation](experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json):
+  40 tasks × 50 initial states × 5 lighting domains = 10,000 rollouts.
+- [LIBERO smaller evaluation](experiments/simulation/libero/manifests/libero_manifest_10_init_states_2000_rollouts.json):
+  40 tasks × 10 initial states × 5 lighting domains = 2,000 rollouts.
+- [RoboTwin 2.0 evaluation](experiments/simulation/robotwin/manifests/robotwin2_test_manifest_50_seeds_3250_rollouts.json):
+  13 tasks × 50 seeds × 5 lighting domains = 3,250 rollouts.
+
+The manifests fix episode seeds and lighting conditions. The LIBERO runner
+reads its manifest directly; the current RoboTwin runner does not load its
+JSON manifest automatically. During evaluation, the simulator renders
+observations and the policy produces actions.
 
 ## 🏋️ Training
 
