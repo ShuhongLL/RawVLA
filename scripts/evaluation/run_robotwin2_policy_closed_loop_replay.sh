@@ -10,5 +10,5 @@ export RECORD_EPISODE_DATA="${RECORD_EPISODE_DATA:-1}"
 export ORIGINAL_IMAGE_KEY="${ORIGINAL_IMAGE_KEY:-rgb}"
 export POLICY_IMAGE_KEY="${POLICY_IMAGE_KEY:-default_isp}"
 
-CODE_ROOT="${CODE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
-exec bash "${CODE_ROOT}/scripts/run_robotwin2_policy_easy.sh"
+CODE_ROOT="${CODE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
+exec bash "${CODE_ROOT}/scripts/evaluation/run_robotwin2_policy_easy.sh"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${RAWVLA_ROOT:-$(cd "${SCRIPT_DIR}/.." && pwd)}"
+ROOT="${RAWVLA_ROOT:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
 STARVLA_DIR="${STARVLA_DIR:-${ROOT}/starVLA}"
 ROBOTWIN_CHECKPOINT="${ROBOTWIN_CHECKPOINT:-}"
 

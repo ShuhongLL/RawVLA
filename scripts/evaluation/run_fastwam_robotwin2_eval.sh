@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-CODE_ROOT="${CODE_ROOT:-$(cd -- "$SCRIPT_DIR/.." && pwd)}"
+CODE_ROOT="${CODE_ROOT:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-$CODE_ROOT}"
 FASTWAM_DIR="${FASTWAM_DIR:-${CODE_ROOT}/third_party/FastWAM}"
 ROBOTWIN_ROOT="${ROBOTWIN_ROOT:-${FASTWAM_DIR}/third_party/RoboTwin}"
@@ -23,7 +23,7 @@ shift || true
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  scripts/run_fastwam_robotwin2_eval.sh [smoke|full|one] [task]
+  scripts/evaluation/run_fastwam_robotwin2_eval.sh [smoke|full|one] [task]
 
 Modes:
   smoke  Run one task with one episode per clean/random phase.

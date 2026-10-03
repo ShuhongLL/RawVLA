@@ -19,7 +19,10 @@ third_party/RoboTwin/                RoboTwin 2.0 integration (submodule)
 third_party/openvla-oft/             OpenVLA-OFT dependency (submodule)
 third_party/FastWAM/                 FastWAM integration (submodule)
 third_party/Isaac-GR00T/             GR00T dependency (submodule)
-scripts/                             shared training, replay, and setup tools
+scripts/setup/                       environment and local setup
+scripts/training/                    training data and job preparation
+scripts/replay/                      dataset replay and conversion
+scripts/evaluation/                  evaluation runners and summaries
 replay/                              replay instructions and small manifests
 finetune/calibration/                default-ISP calibration utilities
 tools/checkpoints/                   checkpoint download and validation helpers
@@ -52,7 +55,7 @@ conda env create -f environment-robotwin2.yml
 
 After installing StarVLA/LIBERO, generate the ignored machine-local LIBERO
 simulator paths in `.local/libero/config.yaml` with
-`python scripts/configure_libero.py`. The versioned RAW-VLA training recipes
+`python scripts/setup/configure_libero.py`. The versioned RAW-VLA training recipes
 live separately in `configs/libero/`.
 
 ## Checkpoints
@@ -114,7 +117,7 @@ PY=python bash experiments/simulation/libero/scripts/run_libero_bench.sh
 
 DATA_ROOT=/path/to/data \
 CKPT_ROOT=/path/to/checkpoints \
-bash scripts/run_robotwin2_starvla_rgb_eval.sh one adjust_bottle
+bash scripts/evaluation/run_robotwin2_starvla_rgb_eval.sh one adjust_bottle
 ```
 
 Run scripts with `--help` where supported and start with one task/episode before

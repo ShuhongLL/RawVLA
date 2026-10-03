@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-CODE_ROOT="${CODE_ROOT:-$(cd -- "$SCRIPT_DIR/.." && pwd)}"
+CODE_ROOT="${CODE_ROOT:-$(cd -- "$SCRIPT_DIR/../.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-$CODE_ROOT}"
 STARVLA_DIR="${STARVLA_DIR:-${CODE_ROOT}/starVLA}"
 ROBOTWIN_PATH="${ROBOTWIN_PATH:-${CODE_ROOT}/third_party/RoboTwin}"
@@ -99,7 +99,7 @@ fi
 usage() {
   cat >&2 <<'EOF'
 Usage:
-  scripts/run_robotwin2_starvla_rgb_eval.sh [smoke|full|one] [task...]
+  scripts/evaluation/run_robotwin2_starvla_rgb_eval.sh [smoke|full|one] [task...]
 
 Modes:
   smoke  Run both checkpoints on easy+hard for SMOKE_TASKS, with SMOKE_TRIALS.
@@ -605,7 +605,7 @@ run_checkpoint() {
     done
   done
 
-  "${CODE_ROOT}/scripts/summarize_robotwin2_eval.py" "${RESULT_ROOT}/${RUN_MODE}" > "${run_dir}/summary.txt" || true
+  "${CODE_ROOT}/scripts/evaluation/summarize_robotwin2_eval.py" "${RESULT_ROOT}/${RUN_MODE}" > "${run_dir}/summary.txt" || true
   cleanup_server
   trap - RETURN
   return "${failures}"
@@ -687,7 +687,7 @@ main() {
     fi
   done
 
-  "${CODE_ROOT}/scripts/summarize_robotwin2_eval.py" "${RESULT_ROOT}/${RUN_MODE}" | tee "${RESULT_ROOT}/${RUN_MODE}/summary.txt"
+  "${CODE_ROOT}/scripts/evaluation/summarize_robotwin2_eval.py" "${RESULT_ROOT}/${RUN_MODE}" | tee "${RESULT_ROOT}/${RUN_MODE}/summary.txt"
   if [[ "${failures}" -ne 0 ]]; then
     return 1
   fi

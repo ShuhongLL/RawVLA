@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 ROBOTWIN_ROOT = ROOT / "third_party" / "RoboTwin"
 TRAIN_SEED = 20260824
 RAW_WHITE_LEVEL = 3.5

@@ -16,7 +16,7 @@ import h5py
 import numpy as np
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 RAWVLA_BENCH_ROOT = ROOT / "experiments" / "simulation" / "libero"
 STARVLA_ROOT = ROOT / "starVLA"
 OPENVLA_OFT_ROOT = ROOT / "third_party" / "openvla-oft"

@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 PROFILES: dict[str, tuple[str, ...]] = {
     "rawvla": ("torch", "numpy"),
     "starvla-libero": (
@@ -122,7 +122,7 @@ def robotwin_render_smoke() -> None:
     if missing:
         raise FileNotFoundError(
             "RoboTwin simulator assets are missing; run "
-            "scripts/setup_robotwin_assets.sh. Missing: " + ", ".join(missing)
+            "scripts/setup/setup_robotwin_assets.sh. Missing: " + ", ".join(missing)
         )
     renderer = sapien.SapienRenderer()
     del renderer

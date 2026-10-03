@@ -28,7 +28,7 @@ python -m pip install --no-deps --no-build-isolation -e ./third_party/LIBERO
 python -m pip install --no-deps -e ./third_party/openvla-oft
 python -m pip install --no-deps -e ./starVLA
 export LIBERO_CONFIG_PATH="$PWD/.local/libero"
-python scripts/configure_libero.py
+python scripts/setup/configure_libero.py
 ```
 
 `--no-deps` on the source installs preserves the tested dependency pins
@@ -44,10 +44,10 @@ If LIBERO downloaded assets into a cache, the configurator detects
 Validate imports, RAW-VLA computation, and optional headless LIBERO rendering:
 
 ```bash
-python scripts/check_environment.py rawvla
+python scripts/setup/check_environment.py rawvla
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
-  python scripts/check_environment.py starvla-libero --render
-python scripts/replay_libero_train_rawvla_light_npz.py --help
+  python scripts/setup/check_environment.py starvla-libero --render
+python scripts/replay/replay_libero_train_rawvla_light_npz.py --help
 ```
 
 ## RoboTwin 2.0
@@ -56,20 +56,21 @@ python scripts/replay_libero_train_rawvla_light_npz.py --help
 conda env create -f environment-robotwin2.yml
 conda activate robotwin
 ROBOTWIN_ASSETS_SOURCE=/path/to/existing/RoboTwin/assets \
-  bash scripts/setup_robotwin_assets.sh
+  bash scripts/setup/setup_robotwin_assets.sh
 # Or omit ROBOTWIN_ASSETS_SOURCE to download and extract the official assets.
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
-  python scripts/check_environment.py robotwin --render
-python scripts/replay_robotwin2_clean_training.py --help
-python scripts/replay_robotwin2_paired_lighting_training.py --help
+  python scripts/setup/check_environment.py robotwin --render
+python scripts/replay/replay_robotwin2_clean_training.py --help
+python scripts/replay/replay_robotwin2_paired_lighting_training.py --help
 ```
 
 The RoboTwin installer builds CuRobo and applies the SAPIEN/MPLib compatibility
 patches required by the pinned RoboTwin checkout. Simulator assets are not
-stored in Git and require about 30 GB. `setup_robotwin_assets.sh` either links
-an existing complete asset tree or downloads and extracts the three official
-archives. Keep the activated environment's `bin` directory on `PATH`: CuRobo
+stored in Git and require about 30 GB. The
+`scripts/setup/setup_robotwin_assets.sh` script either links an existing
+complete asset tree or downloads and extracts the three official archives.
+Keep the activated environment's `bin` directory on `PATH`: CuRobo
 uses the environment's `ninja` executable when it must rebuild CUDA extensions.
 
 ## FastWAM
@@ -80,7 +81,7 @@ FastWAM uses a newer PyTorch/CUDA stack and should not share the StarVLA env.
 conda env create -f environment-fastwam.yml
 conda activate fastwam
 python -m pip install -e ./third_party/FastWAM
-python scripts/check_environment.py fastwam
+python scripts/setup/check_environment.py fastwam
 ```
 
 The pinned environment uses Python 3.10, PyTorch 2.7.1/CUDA 12.8, and
@@ -96,7 +97,7 @@ conda env create -f environment-openvla-oft.yml
 conda activate openvla-oft
 python -m pip install -e ./third_party/openvla-oft
 python -m pip install "flash-attn==2.5.5" --no-build-isolation
-python scripts/check_environment.py openvla-oft
+python scripts/setup/check_environment.py openvla-oft
 ```
 
 ## Isaac GR00T
@@ -109,7 +110,7 @@ conda env create -f environment-groot.yml
 conda activate groot
 cd third_party/Isaac-GR00T
 uv sync --frozen
-uv run python ../../scripts/check_environment.py groot
+uv run python ../../scripts/setup/check_environment.py groot
 ```
 
 For architecture-specific NVIDIA platforms, follow the deployment instructions

@@ -4,7 +4,7 @@ import argparse,json,re
 from datetime import datetime,timezone
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 p=argparse.ArgumentParser(); p.add_argument('--output-dir',required=True); p.add_argument('--batch-size',type=int,default=20)
 p.add_argument('--episodes',type=int,default=50); p.add_argument('--code-root',default=str(REPO_ROOT))
 a=p.parse_args(); out=Path(a.output_dir)
@@ -18,7 +18,7 @@ for i,task in enumerate(tasks):
     result=str(Path(a.code_root) / 'results' / 'robotwin2-policy-closed-loop' / tag)
     cmd=(f'cd {a.code_root} && TASK={task} EPISODES={a.episodes} SAVE_EVERY=5 '
          f'ORIGINAL_IMAGE_KEY=rgb POLICY_IMAGE_KEY=default_isp RUN_TAG={tag} '
-         'bash scripts/run_robotwin2_policy_easy.sh')
+         'bash scripts/evaluation/run_robotwin2_policy_easy.sh')
     item={'batch':batch,'task':task,'run_tag':tag,'result_dir':result,'result_exists':Path(result).exists(),
           'resources':{'gpu_type':'NVIDIA-L4','gpu_count':1,'priority':9},'job_command':cmd}
     rows.append(item); (out/f'{task}.job.json').write_text(json.dumps(item,indent=2)+'\n')

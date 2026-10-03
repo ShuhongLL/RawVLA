@@ -16,7 +16,7 @@ import numpy as np
 from PIL import Image
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 RAWVLA_BENCH_ROOT = ROOT / "experiments" / "simulation" / "libero"
 if str(RAWVLA_BENCH_ROOT) not in sys.path:
     sys.path.insert(0, str(RAWVLA_BENCH_ROOT))

@@ -13,7 +13,7 @@ git submodule update --init third_party/RoboTwin starVLA
 conda env create -f environment-robotwin2.yml
 conda activate robotwin
 # Download the official assets, or set ROBOTWIN_ASSETS_SOURCE to reuse them.
-bash scripts/setup_robotwin_assets.sh
+bash scripts/setup/setup_robotwin_assets.sh
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 ```
 
@@ -21,15 +21,15 @@ The installer installs the pinned SAPIEN/MPLib stack, builds CuRobo 0.7.8, and
 applies the compatibility patches expected by the RoboTwin checkout. The asset
 setup script downloads and extracts the roughly 30 GB simulator asset set. To
 reuse an existing download instead, run
-`ROBOTWIN_ASSETS_SOURCE=/path/to/RoboTwin/assets bash scripts/setup_robotwin_assets.sh`.
+`ROBOTWIN_ASSETS_SOURCE=/path/to/RoboTwin/assets bash scripts/setup/setup_robotwin_assets.sh`.
 
 ## Validate
 
 ```bash
 VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
-  python scripts/check_environment.py robotwin --render
-python scripts/replay_robotwin2_clean_training.py --help
-python scripts/replay_robotwin2_paired_lighting_training.py --help
+  python scripts/setup/check_environment.py robotwin --render
+python scripts/replay/replay_robotwin2_clean_training.py --help
+python scripts/replay/replay_robotwin2_paired_lighting_training.py --help
 ```
 
 If the NVIDIA ICD lives elsewhere, set `VK_ICD_FILENAMES` to the path provided
@@ -40,8 +40,8 @@ by the host driver installation.
 ```bash
 export ROBOTWIN_CHECKPOINT=/absolute/path/to/checkpoint.pt
 export ROBOTWIN_PYTHON="$(command -v python)"
-scripts/robotwin2_eval.sh demo_clean all
-scripts/robotwin2_eval.sh demo_randomized all
+scripts/evaluation/robotwin2_eval.sh demo_clean all
+scripts/evaluation/robotwin2_eval.sh demo_randomized all
 ```
 
 The runners derive repository paths from their own location. Override

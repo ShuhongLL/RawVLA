@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
+REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 ASSETS_ROOT="${REPO_ROOT}/third_party/RoboTwin/assets"
 ASSETS_SOURCE="${ROBOTWIN_ASSETS_SOURCE:-}"
 ASSET_GROUPS=(background_texture embodiments objects)

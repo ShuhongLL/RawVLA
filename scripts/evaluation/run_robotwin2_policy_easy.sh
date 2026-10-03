@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CODE_ROOT="${CODE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+CODE_ROOT="${CODE_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 DATA_ROOT="${DATA_ROOT:-$CODE_ROOT}"
 TASK="${TASK:-adjust_bottle}"
 TASK_LIST="${TASK_LIST:-${TASK}}"
@@ -62,7 +62,7 @@ PY
 fi
 
 mkdir -p "${RESULT_DIR}/audit"
-"${ROBOTWIN_PYTHON}" "${CODE_ROOT}/scripts/write_robotwin2_policy_metadata.py" \
+"${ROBOTWIN_PYTHON}" "${CODE_ROOT}/scripts/evaluation/write_robotwin2_policy_metadata.py" \
   --output "${RESULT_DIR}/run_metadata.json" --run-tag "${RUN_TAG}" --tasks "${TASK_LIST}" \
   --episodes "${EPISODES}" --start-episode "${START_EPISODE}" --save-every "${SAVE_EVERY}" \
   --eval-start-seed "${EVAL_START_SEED}" \
@@ -101,5 +101,5 @@ fi
 export RAWVLA_QWEN_ENABLE_FAST_HIDDEN=0
 export STARVLA_REQUIRE_FLOAT_IMAGE=1
 
-bash "${CODE_ROOT}/scripts/run_robotwin2_starvla_rgb_eval.sh" smoke
-"${ROBOTWIN_PYTHON}" "${CODE_ROOT}/scripts/summarize_robotwin2_policy_rollout.py" "${RESULT_DIR}"
+bash "${CODE_ROOT}/scripts/evaluation/run_robotwin2_starvla_rgb_eval.sh" smoke
+"${ROBOTWIN_PYTHON}" "${CODE_ROOT}/scripts/evaluation/summarize_robotwin2_policy_rollout.py" "${RESULT_DIR}"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 PROXY_HTTP="${PROXY_HTTP:-}"
 PROXY_ALL="${PROXY_ALL:-}"
 DATA_ROOT="${DATA_ROOT:-$REPO_ROOT/benchmark_data}"
