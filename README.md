@@ -82,7 +82,12 @@ the repository default.
 
 ## 🗂️ RawVLA-Bench
 
-### Training Data
+The train and test resources are hosted separately: paired training
+trajectories are on Hugging Face, while the frozen test/evaluation protocols
+are JSON manifests in this GitHub repository. No pre-rendered test trajectories
+are included in the Hugging Face dataset.
+
+### Train: Paired Trajectories (Hugging Face)
 
 The paired RAW/RGB training replay data is available directly from
 [RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench).
@@ -95,16 +100,19 @@ hf download ToferFish/RawVLA-Bench \
   --local-dir benchmark_data/RawVLA-Bench
 ```
 
-The LIBERO RAW files then live under
-`benchmark_data/RawVLA-Bench/data/libero/raw`; the paired RGB files and
-RoboTwin data are in the same download. To regenerate the trajectories from
-source demonstrations, see [replay/README.md](replay/README.md).
+After downloading, the train files are located at:
 
-### Evaluation Manifests
+- LIBERO: `benchmark_data/RawVLA-Bench/data/libero/raw/` and
+  `benchmark_data/RawVLA-Bench/data/libero/rgb/`.
+- RoboTwin 2.0: `benchmark_data/RawVLA-Bench/data/robotwin2/raw/` and
+  `benchmark_data/RawVLA-Bench/data/robotwin2/rgb/`.
 
-The evaluation protocol is recorded in frozen simulator rollout manifests,
-not pre-rendered test trajectories. These JSON files are included in this
-GitHub repository, not in the Hugging Face training-data release:
+To regenerate these trajectories from source demonstrations instead, see
+[replay/README.md](replay/README.md).
+
+### Test: Evaluation Manifests (GitHub)
+
+The test protocols are recorded in these frozen simulator rollout manifests:
 
 - [LIBERO full evaluation](experiments/simulation/libero/manifests/libero_manifest_50_init_states_10000_rollouts.json):
   40 tasks × 50 initial states × 5 lighting domains = 10,000 rollouts.
