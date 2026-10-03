@@ -101,6 +101,7 @@ playground/Datasets/
 *.bmp
 *.tif
 *.tiff
+!assets/teaser.png
 
 # Local/internal documentation
 docs/

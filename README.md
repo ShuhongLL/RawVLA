@@ -1,14 +1,36 @@
-# 📷 RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation
+<div align="center">
 
-[Shuhong Liu](https://shuhongll.github.io/), Heng Zhou, Lingfeng Qian,
-Yuhao Fang, Xianbao Hou, Qianyu Zhou,
-[Lin Gu](https://sites.google.com/view/linguedu/home), Wei Sui,
-[Jianfei Yang](https://marsyang.site/), [Ziteng Cui](https://cuiziteng.github.io/)
+<h1>📷 RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation</h1>
 
-[Project Page](https://shuhongll.github.io/rawvla/) ·
-[Paper](https://arxiv.org/abs/2609.37530) ·
-[Code](https://github.com/ShuhongLL/RawVLA) ·
-[RawVLA-Bench](https://huggingface.co/datasets/ToferFish/RawVLA-Bench)
+<img src="assets/teaser.png" alt="Figure 1 from the RawVLA paper: method, benchmark, and real-world results" width="100%">
+
+<p>
+  <a href="https://shuhongll.github.io/">Shuhong Liu</a><sup>1,2</sup>,
+  Heng Zhou<sup>2,‡</sup>, Lingfeng Qian<sup>2</sup>, Yuhao Fang<sup>2</sup>,
+  Xianbao Hou<sup>2</sup>, Qianyu Zhou<sup>1</sup>,
+  <a href="https://sites.google.com/view/linguedu/home">Lin Gu</a><sup>4</sup>,
+  Wei Sui<sup>2</sup>, <a href="https://marsyang.site/">Jianfei Yang</a><sup>3</sup>,
+  <a href="https://cuiziteng.github.io/">Ziteng Cui</a><sup>1,5,†</sup>
+</p>
+
+<p>
+  <sup>1</sup>The University of Tokyo &nbsp;
+  <sup>2</sup>D-Robotics &nbsp;
+  <sup>3</sup>NTU &nbsp;
+  <sup>4</sup>Tohoku University &nbsp;
+  <sup>5</sup>HKUST(GZ)
+</p>
+
+<p><sup>‡</sup>Project lead &nbsp; <sup>†</sup>Corresponding author</p>
+
+<p>
+  <a href="https://shuhongll.github.io/rawvla/">Project Page</a> ·
+  <a href="https://arxiv.org/abs/2609.37530">Paper</a> ·
+  <a href="https://github.com/ShuhongLL/RawVLA">Code</a> ·
+  <a href="https://huggingface.co/datasets/ToferFish/RawVLA-Bench">RawVLA-Bench</a>
+</p>
+
+</div>
 
 RAW-VLA is a streaming, illumination-adaptive RAW image frontend for
 vision-language-action policies. This repository contains the RAW frontend,
