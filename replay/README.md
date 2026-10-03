@@ -1,5 +1,10 @@
 # Replay pipelines
 
+The published paired training trajectories can be downloaded directly from
+[RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench).
+The workflows below are optional steps for regenerating that data from source
+demonstrations.
+
 Replay outputs are intentionally not stored in Git. By default they live under
 `benchmark_data/`, which is ignored. Replay commands support explicit
 input/output paths; begin with one episode or one worker before scaling up.

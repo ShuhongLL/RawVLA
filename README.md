@@ -82,13 +82,32 @@ python tools/checkpoints/validate_starvla_libero.py
 Set `STARVLA_ROOT=/custom/path/to/starVLA` when the StarVLA checkout is not at
 the repository default.
 
+## 🗂️ Replay Data
+
+The paired RAW/RGB training replay data is available directly from
+[RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench).
+It contains 2,403 successful trajectories: 1,771 from LIBERO and 632 from
+RoboTwin 2.0. No simulator replay is needed to use the published data.
+
+```bash
+hf download ToferFish/RawVLA-Bench \
+  --repo-type dataset \
+  --local-dir benchmark_data/RawVLA-Bench
+```
+
+The LIBERO RAW files then live under
+`benchmark_data/RawVLA-Bench/data/libero/raw`; the paired RGB files and
+RoboTwin data are in the same download. To regenerate the trajectories from
+source demonstrations, see [replay/README.md](replay/README.md).
+
 ## 🏋️ Training
 
 The public LIBERO configurations share
 [`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml) and contain
 complete overrides for Qwen3-OFT, Qwen3-PI, WM4A-Cosmos, WM4A-Wan, PI0, and
 PI0.5 under [`configs/libero`](configs/libero). Paths are resolved through
-`RAWVLA_ROOT`:
+`RAWVLA_ROOT`. This example uses the published LIBERO replay data described
+above:
 
 ```bash
 export RAWVLA_ROOT="$PWD"
@@ -97,25 +116,14 @@ conda activate starvla-libero
 cd starVLA
 accelerate launch --num_processes 1 \
   starVLA/training/train_starvla.py \
-  --config_yaml ../configs/libero/qwen3_oft.yaml
+  --config_yaml ../configs/libero/qwen3_oft.yaml \
+  --datasets.vla_data.cache_root "$RAWVLA_ROOT/benchmark_data/RawVLA-Bench/data/libero/raw"
 ```
 
 Each child config uses a relative `extends` entry. The training loader merges
 the base first and the selected backbone config second; command-line dotlist
 overrides remain highest priority. The VLA backbone is frozen and RAW-VLA is
 initialized from scratch.
-
-## 🗂️ Replay Data
-
-Replay source code is part of the release. See [replay/README.md](replay/README.md)
-for data downloads and replay commands for:
-
-- LIBERO simulator re-rendering into paired RAW/RGB NPZ trajectories;
-- RoboTwin 2.0 clean expert replay;
-- RoboTwin 2.0 paired clean/random-light state-copy replay.
-
-Generated trajectories, datasets, checkpoints, and videos are intentionally
-excluded by `.gitignore`.
 
 ## 📊 Evaluation
 
@@ -153,8 +161,3 @@ If you use RawVLA or RawVLA-Bench, please cite the paper:
   url={https://arxiv.org/abs/2609.37530}
 }
 ```
-
-## ⚖️ License
-
-The root project is released under the MIT License. Third-party submodules
-retain their own licenses.
