@@ -166,7 +166,7 @@ Physical-robot entry points are documented under
 [`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and
 LIBERO remain simulator integrations.
 
-## 📚 Citation
+## 📚 BibTeX
 
 If you use RawVLA or RawVLA-Bench, please cite the paper:
 
