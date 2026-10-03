@@ -6,11 +6,11 @@
 
 <p>
   <a href="https://shuhongll.github.io/">Shuhong Liu</a><sup>1,2</sup>,
-  Heng Zhou<sup>2,‡</sup>, Lingfeng Qian<sup>2</sup>, Yuhao Fang<sup>2</sup>,
+  Heng Zhou<sup>2</sup>, Lingfeng Qian<sup>2</sup>, Yuhao Fang<sup>2</sup>,
   Xianbao Hou<sup>2</sup>, Qianyu Zhou<sup>1</sup>,
   <a href="https://sites.google.com/view/linguedu/home">Lin Gu</a><sup>4</sup>,
   Wei Sui<sup>2</sup>, <a href="https://marsyang.site/">Jianfei Yang</a><sup>3</sup>,
-  <a href="https://cuiziteng.github.io/">Ziteng Cui</a><sup>1,5,†</sup>
+  <a href="https://cuiziteng.github.io/">Ziteng Cui</a><sup>1,5</sup>
 </p>
 
 <p>
@@ -20,8 +20,6 @@
   <sup>4</sup>Tohoku University &nbsp;
   <sup>5</sup>HKUST(GZ)
 </p>
-
-<p><sup>‡</sup>Project lead &nbsp; <sup>†</sup>Corresponding author</p>
 
 <p>
   <a href="https://shuhongll.github.io/rawvla/">Project Page</a> ·
