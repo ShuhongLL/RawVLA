@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1>📷 RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation</h1>
+<h1>RawVLA: Embodied Neural Image Signal Processor for Robotic Manipulation</h1>
 
 <img src="assets/teaser.png" alt="Figure 1 from the RawVLA paper: method, benchmark, and real-world results" width="100%">
 
