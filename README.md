@@ -165,20 +165,27 @@ and the policy produces actions.
 
 ## 🏋️ Training
 
-The main RawVLA-Bench experiments in the paper use three frozen backbones on
-LIBERO (Qwen3-OFT, π0, and π0.5) and two on RoboTwin 2.0 (π0 and π0.5).
-The LIBERO training configurations are in [`configs/libero`](configs/libero)
-and inherit [`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml).
-The RoboTwin π0/π0.5 configurations are in
-[`configs/robotwin`](configs/robotwin/README.md) and inherit
-[`configs/base/rawvla_robotwin.yaml`](configs/base/rawvla_robotwin.yaml).
-RoboTwin backbone preparation is documented in
-[`experiments/simulation/robotwin/backbones`](experiments/simulation/robotwin/backbones/README.md).
-Additional experimental LIBERO recipes are documented separately in
+The paper's main RawVLA-Bench training recipes are:
+
+| Benchmark | Frozen VLA backbone | RAW-VLA training config |
+| --- | --- | --- |
+| LIBERO | Qwen3-OFT | [`qwen3_oft.yaml`](configs/libero/qwen3_oft.yaml) |
+| LIBERO | π0 | [`pi0.yaml`](configs/libero/pi0.yaml) |
+| LIBERO | π0.5 | [`pi05.yaml`](configs/libero/pi05.yaml) |
+| RoboTwin 2.0 | π0 | [`pi0.yaml`](configs/robotwin/pi0.yaml) |
+| RoboTwin 2.0 | π0.5 | [`pi05.yaml`](configs/robotwin/pi05.yaml) |
+
+The LIBERO recipes inherit [`rawvla_libero.yaml`](configs/base/rawvla_libero.yaml);
+the RoboTwin recipes inherit [`rawvla_robotwin.yaml`](configs/base/rawvla_robotwin.yaml).
+Both use the shared [`rawvla.yaml`](configs/base/rawvla.yaml) defaults.
+For RoboTwin, prepare the frozen backbones with the
+[`backbone guide`](experiments/simulation/robotwin/backbones/README.md) and set
+`RAWVLA_MODEL_ROOT` and `RAWVLA_TOKENIZER_PATH` as described in the
+[`RoboTwin training guide`](configs/robotwin/README.md).
+Additional experimental LIBERO recipes are in
 [`configs/libero/optional`](configs/libero/optional/README.md).
-The RoboTwin recipes also require `RAWVLA_MODEL_ROOT` and
-`RAWVLA_TOKENIZER_PATH`; see their README for setup. This LIBERO example uses
-the published training trajectories described above:
+
+For example, train Qwen3-OFT on the published LIBERO trajectories:
 
 ```bash
 export RAWVLA_ROOT="$PWD"
