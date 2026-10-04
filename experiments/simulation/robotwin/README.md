@@ -4,6 +4,10 @@ The pinned RoboTwin checkout lives at `third_party/RoboTwin` on the
 `submodules/RoboTwin` branch. It includes RAW-camera and StarVLA policy
 deployment integration.
 
+RAW-VLA π0/π0.5 training uses the separate StarVLA environment and the
+published paired trajectories. See [`configs/robotwin`](../../../configs/robotwin/README.md)
+for the training recipes; this page installs the RoboTwin simulator for evaluation.
+
 ## Install
 
 From the RAW-VLA repository root:

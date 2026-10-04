@@ -1,0 +1,15 @@
+extends: ../base/rawvla_robotwin.yaml
+
+run_id: rawvla_pi05_robotwin2
+
+datasets:
+  vla_data:
+    stats_path: ${oc.env:RAWVLA_MODEL_ROOT}/pi05_robotwin/policy_norm_stats.json
+
+framework:
+  name: PI05
+  discrete_state_input: true
+  max_token_len: 200
+
+trainer:
+  pretrained_checkpoint: ${oc.env:RAWVLA_MODEL_ROOT}/pi05_robotwin/model.safetensors

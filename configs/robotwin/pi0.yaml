@@ -1,0 +1,17 @@
+extends: ../base/rawvla_robotwin.yaml
+
+run_id: rawvla_pi0_robotwin2
+
+datasets:
+  vla_data:
+    stats_path: ${oc.env:RAWVLA_MODEL_ROOT}/pi0_robotwin/45000/assets/robotwin_50_clean/norm_stats.json
+    delta_action_indices: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12]
+
+framework:
+  name: PI0
+  discrete_state_input: false
+  max_token_len: 48
+
+trainer:
+  pretrained_checkpoint: ${oc.env:RAWVLA_MODEL_ROOT}/pi0_robotwin_pytorch_45000/model.safetensors
+  action_loss_weight: 0.02

@@ -1,0 +1,62 @@
+# RoboTwin 2.0 dataset and PI-policy defaults layered on shared RAW-VLA settings.
+extends: rawvla.yaml
+
+datasets:
+  vla_data:
+    data_mix: rawvla_policy_light_npz
+    dataset_format: robotwin2
+    cache_root: ${oc.env:RAWVLA_ROOT}/benchmark_data/RawVLA-Bench/data/robotwin2/raw
+    rgb_cache_root: ${oc.env:RAWVLA_ROOT}/benchmark_data/RawVLA-Bench/data/robotwin2/rgb
+    burst_frames: 6
+    rnn_frames: 6
+    observation_stride: 5
+    action_horizon: 50
+    action_offset: 1
+    state_source_key: actions
+    normalization: zscore
+    stats_key: norm_stats
+    action_stats_key: actions
+    state_stats_key: state
+    delta_action_indices: []
+
+framework:
+  precision: bfloat16
+  action_dim: 32
+  action_horizon: 50
+  max_state_dim: 32
+  num_inference_steps: 10
+  image_resolution: [224, 224]
+  image_keys: [base_0_rgb, left_wrist_0_rgb, right_wrist_0_rgb]
+  tokenizer:
+    model_path: ${oc.env:RAWVLA_TOKENIZER_PATH}
+    pad_state_value: -2.0
+  paligemma:
+    model_name_or_path: ""
+  raw_frontend:
+    output_contract: rgb_chw_float32_0_1
+    max_exposure_ev: 10.0
+    gray_preserving_ccm: true
+    exposure_target: 0.6
+    exposure_loss_weight: 0.03
+    chroma_prior_weight: 0.0
+    chroma_supervision_weight: 0.3
+    chroma_supervision_beta: 0.05
+    chroma_supervision_min_luma: 0.02
+    chroma_supervision_max_luma: 0.98
+
+trainer:
+  freeze_modules: vlm,action_head
+  action_loss_weight: 0.1
+  learning_rate:
+    base: 5.0e-5
+    raw_frontend: 5.0e-5
+  max_train_steps: 1000
+  num_warmup_steps: 50
+  save_interval: 1000
+  optimizer:
+    name: AdamW
+    weight_decay: 1.0e-10
+  loss_scale:
+    vla: 1.0
+
+wandb_project: rawvla_robotwin2

@@ -27,11 +27,14 @@ Define an asset root outside the source tree:
 
 ```bash
 export MODEL_ROOT=/path/to/robotwin2_backbones
+export RAWVLA_MODEL_ROOT="$MODEL_ROOT"
 mkdir -p "$MODEL_ROOT"
 ```
 
 The scripts accept an explicit destination, so they do not depend on a
-particular cluster filesystem layout.
+particular cluster filesystem layout. `configs/robotwin/pi0.yaml` and
+`configs/robotwin/pi05.yaml` resolve their model and statistics paths through
+`RAWVLA_MODEL_ROOT`.
 
 ## π0: download and convert JAX/Orbax weights
 

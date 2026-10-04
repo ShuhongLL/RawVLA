@@ -15,10 +15,11 @@ Install an NVIDIA driver compatible with the selected PyTorch wheel. The
 checked-in Conda files describe Python dependencies; system NVIDIA, Vulkan/EGL,
 compiler, and simulator asset installation remains host-specific.
 
-## StarVLA + LIBERO + RAW-VLA training and evaluation
+## StarVLA + RAW-VLA training and LIBERO evaluation
 
-This is the main RAW-VLA environment. The checked-in pins match the validated
-environment: Python 3.10, PyTorch 2.6/CUDA 12.4,
+This environment runs RAW-VLA training with either LIBERO or RoboTwin paired
+trajectories, and LIBERO simulator evaluation. The checked-in pins match the
+validated environment: Python 3.10, PyTorch 2.6/CUDA 12.4,
 Transformers 4.57, MuJoCo 3.2.3, and robosuite 1.4.0.
 
 ```bash

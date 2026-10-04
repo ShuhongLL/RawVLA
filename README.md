@@ -53,18 +53,22 @@ branch and pinned commit are documented in [SUBMODULES.md](SUBMODULES.md).
 
 Install only the environment needed for your workflow:
 
-| Workflow | Environment | What it runs |
+| Benchmark | Training environment | Evaluation environment |
 | --- | --- | --- |
-| LIBERO training and evaluation | `environment-libero.yml` (`starvla-libero`) | StarVLA, RAW-VLA, and LIBERO |
-| RoboTwin 2.0 evaluation | `environment-robotwin2.yml` (`robotwin`) | RoboTwin simulator; StarVLA policy-server evaluation also needs `starvla-libero` |
+| LIBERO | `environment-libero.yml` (`starvla-libero`) | `environment-libero.yml` (`starvla-libero`) |
+| RoboTwin 2.0 | `environment-libero.yml` (`starvla-libero`) for RAW-VLA training | `environment-libero.yml` (`starvla-libero`) for the policy + `environment-robotwin2.yml` (`robotwin`) for the simulator |
+
+The `robotwin` environment runs the simulator; RAW-VLA training for both
+benchmarks uses the StarVLA environment. RoboTwin π0/π0.5 training recipes are
+in [`configs/robotwin`](configs/robotwin/README.md).
 
 Standalone OpenVLA-OFT and GR00T have separate, optional environments;
 see [ENVIRONMENTS.md](ENVIRONMENTS.md) for their installation and validation.
 
 ### LIBERO and RAW-VLA
 
-Use this environment for LIBERO training and evaluation, and the StarVLA policy
-server used alongside RoboTwin:
+Use this environment for StarVLA/RAW-VLA training, LIBERO evaluation, and the
+StarVLA policy server used alongside RoboTwin:
 
 ```bash
 conda env create -f environment-libero.yml
@@ -82,9 +86,9 @@ The last command writes ignored, machine-local simulator paths to
 
 ### RoboTwin 2.0
 
-Install the simulator in its own environment. The asset script downloads the
-official assets unless you set `ROBOTWIN_ASSETS_SOURCE` to an existing asset
-directory:
+Install the simulator for evaluation in its own environment. The asset script
+downloads the official assets unless you set `ROBOTWIN_ASSETS_SOURCE` to an
+existing asset directory:
 
 ```bash
 conda env create -f environment-robotwin2.yml
@@ -165,12 +169,16 @@ The main RawVLA-Bench experiments in the paper use three frozen backbones on
 LIBERO (Qwen3-OFT, π0, and π0.5) and two on RoboTwin 2.0 (π0 and π0.5).
 The LIBERO training configurations are in [`configs/libero`](configs/libero)
 and inherit [`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml).
+The RoboTwin π0/π0.5 configurations are in
+[`configs/robotwin`](configs/robotwin/README.md) and inherit
+[`configs/base/rawvla_robotwin.yaml`](configs/base/rawvla_robotwin.yaml).
 RoboTwin backbone preparation is documented in
 [`experiments/simulation/robotwin/backbones`](experiments/simulation/robotwin/backbones/README.md).
 Additional experimental LIBERO recipes are documented separately in
 [`configs/libero/optional`](configs/libero/optional/README.md).
-Paths are resolved through `RAWVLA_ROOT`. This example uses the published
-LIBERO training trajectories described above:
+The RoboTwin recipes also require `RAWVLA_MODEL_ROOT` and
+`RAWVLA_TOKENIZER_PATH`; see their README for setup. This LIBERO example uses
+the published training trajectories described above:
 
 ```bash
 export RAWVLA_ROOT="$PWD"
