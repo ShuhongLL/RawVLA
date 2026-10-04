@@ -57,8 +57,6 @@ Install only the environment needed for your workflow:
 | --- | --- | --- |
 | LIBERO training and evaluation | `environment-libero.yml` (`starvla-libero`) | StarVLA, RAW-VLA, and LIBERO |
 | RoboTwin 2.0 evaluation | `environment-robotwin2.yml` (`robotwin`) | RoboTwin simulator; StarVLA policy-server evaluation also needs `starvla-libero` |
-| ISP perturbation on LIBERO (optional) | `starvla-libero` | LIBERO synthetic ISP studies |
-| ISP perturbation on RoboTwin 2.0 (optional) | StarVLA: `starvla-libero` + `robotwin`; FastWAM: `environment-fastwam.yml` (`fastwam`) | RoboTwin synthetic ISP studies with either policy family |
 
 Standalone OpenVLA-OFT and GR00T have separate, optional environments;
 see [ENVIRONMENTS.md](ENVIRONMENTS.md) for their installation and validation.
@@ -99,22 +97,6 @@ Evaluation with a StarVLA policy server also uses the `starvla-libero`
 environment above. See
 [ENVIRONMENTS.md](ENVIRONMENTS.md) for interpreter selection, host-specific
 graphics requirements, and validation commands.
-
-### ISP perturbation (optional)
-
-The synthetic EV, sensor-noise, bit-depth, chromatic, and tonal studies cover
-both LIBERO and RoboTwin 2.0. LIBERO uses `starvla-libero`; RoboTwin with a
-StarVLA policy uses `robotwin` plus `starvla-libero`. For the RoboTwin FastWAM
-baseline, install its separate environment:
-
-```bash
-conda env create -f environment-fastwam.yml
-conda activate fastwam
-python -m pip install -e ./third_party/FastWAM
-```
-
-See [`experiments/isp_perturbation`](experiments/isp_perturbation/README.md)
-for the per-benchmark entry points, observation-key selection, and settings.
 
 ## 🧠 VLA Checkpoints
 
@@ -222,8 +204,7 @@ bash scripts/evaluation/run_robotwin2_starvla_rgb_eval.sh one adjust_bottle
 Run scripts with `--help` where supported and start with one task/episode before
 launching full benchmark matrices.
 
-Synthetic EV, bit-depth, chromatic, and tonal studies are intentionally kept
-separate from RAWVLA-Bench under
+Optional ISP perturbation studies are documented in
 [`experiments/isp_perturbation`](experiments/isp_perturbation/README.md).
 Physical-robot entry points are documented under
 [`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and

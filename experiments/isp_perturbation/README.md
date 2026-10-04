@@ -30,9 +30,18 @@ entry points are under `scripts/evaluation/`, not this directory's `scripts/`.
 | RoboTwin 2.0 with a StarVLA policy | `robotwin` from `environment-robotwin2.yml` for the simulator, plus `starvla-libero` for the policy server |
 | RoboTwin 2.0 with FastWAM | `fastwam` from `environment-fastwam.yml`, using FastWAM's pinned RoboTwin checkout |
 
-Install these only for the studies you run; the commands are in the root
-README and [`ENVIRONMENTS.md`](../../ENVIRONMENTS.md). Use the corresponding
-policy checkpoint and simulator assets for each case.
+Install only the environments needed for the study you run. The LIBERO and
+RoboTwin simulator installation steps are in
+[`ENVIRONMENTS.md`](../../ENVIRONMENTS.md). For the FastWAM policy and its
+pinned RoboTwin integration, run the following from the repository root:
+
+```bash
+conda env create -f environment-fastwam.yml
+conda activate fastwam
+python -m pip install -e ./third_party/FastWAM
+```
+
+Use the corresponding policy checkpoint and simulator assets for each case.
 
 ## LIBERO launchers
 
