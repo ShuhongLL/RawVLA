@@ -171,12 +171,16 @@ and the policy produces actions.
 
 ## 🏋️ Training
 
-The public LIBERO configurations share
-[`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml) and contain
-complete overrides for Qwen3-OFT, Qwen3-PI, WM4A-Cosmos, WM4A-Wan, PI0, and
-PI0.5 under [`configs/libero`](configs/libero). Paths are resolved through
-`RAWVLA_ROOT`. This example uses the published LIBERO replay data described
-above:
+The main RawVLA-Bench experiments in the paper use three frozen backbones on
+LIBERO (Qwen3-OFT, π0, and π0.5) and two on RoboTwin 2.0 (π0 and π0.5).
+The LIBERO training configurations are in [`configs/libero`](configs/libero)
+and inherit [`configs/base/rawvla_libero.yaml`](configs/base/rawvla_libero.yaml).
+RoboTwin backbone preparation is documented in
+[`experiments/simulation/robotwin/backbones`](experiments/simulation/robotwin/backbones/README.md).
+Additional experimental LIBERO recipes are documented separately in
+[`configs/libero/optional`](configs/libero/optional/README.md).
+Paths are resolved through `RAWVLA_ROOT`. This example uses the published
+LIBERO replay data described above:
 
 ```bash
 export RAWVLA_ROOT="$PWD"

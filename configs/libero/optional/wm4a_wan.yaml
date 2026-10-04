@@ -1,4 +1,4 @@
-extends: ../base/rawvla_libero.yaml
+extends: ../../base/rawvla_libero.yaml
 
 run_id: rawvla_wm4a_wan_libero
 
