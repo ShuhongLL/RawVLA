@@ -219,11 +219,20 @@ bash scripts/evaluation/run_robotwin2_starvla_rgb_eval.sh one adjust_bottle
 Run scripts with `--help` where supported and start with one task/episode before
 launching full benchmark matrices.
 
-Optional ISP perturbation studies are documented in
-[`experiments/isp_perturbation`](experiments/isp_perturbation/README.md).
-Physical-robot entry points are documented under
-[`experiments/real_robot`](experiments/real_robot/README.md); RoboTwin and
-LIBERO remain simulator integrations.
+## 🎛️ ISP Perturbation (Optional)
+
+These synthetic studies vary image-processing conditions such as exposure,
+sensor noise, bit depth, color response, and tone. They cover both LIBERO and
+RoboTwin 2.0, including the FastWAM baseline, and are separate from the
+simulator-lighting tests in RawVLA-Bench. See the
+[`ISP perturbation guide`](experiments/isp_perturbation/README.md) for
+environments, settings, and evaluation commands.
+
+## 🤖 Real-Robot Integration
+
+Physical-robot entry points are documented in the
+[`real-robot guide`](experiments/real_robot/README.md). LIBERO and RoboTwin 2.0
+are simulator integrations.
 
 ## 📚 BibTeX
 
