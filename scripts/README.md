@@ -1,9 +1,7 @@
 # Scripts
 
-Run these scripts from the repository root. The published paired training data
-can be downloaded directly from [RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench);
-the replay scripts below are only needed to regenerate it from source
-demonstrations. Installation details are in [ENVIRONMENTS.md](../ENVIRONMENTS.md).
+Run these scripts from the repository root. General installation details are
+in [ENVIRONMENTS.md](../ENVIRONMENTS.md).
 
 ## setup/
 
@@ -16,20 +14,8 @@ demonstrations. Installation details are in [ENVIRONMENTS.md](../ENVIRONMENTS.md
 
 ## replay/
 
-- [download_replay_datasets.sh](replay/download_replay_datasets.sh) downloads
-  the original LIBERO demonstrations and RoboTwin archives for regeneration;
-  it does **not** download the published RawVLA-Bench training pairs.
-- [replay_libero_train_rawvla_light_npz.py](replay/replay_libero_train_rawvla_light_npz.py)
-  re-renders LIBERO demonstrations into paired RAW/RGB trajectories.
-- [replay_robotwin2_clean_training.py](replay/replay_robotwin2_clean_training.py)
-  replays RoboTwin expert trajectories and checks the clean render.
-- [build_robotwin2_lighting_train_manifest.py](replay/build_robotwin2_lighting_train_manifest.py)
-  fixes lighting assignments for successful RoboTwin clean replays.
-- [replay_robotwin2_paired_lighting_training.py](replay/replay_robotwin2_paired_lighting_training.py)
-  uses that manifest to produce paired RoboTwin RAW/RGB trajectories.
-
-See [replay/README.md](../replay/README.md) for the input data, command order,
-and output paths.
+The optional data-regeneration scripts, their environments, inputs, command
+order, and outputs are documented in [replay/README.md](../replay/README.md).
 
 ## evaluation/
 

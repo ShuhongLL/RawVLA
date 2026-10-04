@@ -28,8 +28,6 @@ reuse an existing download instead, run
 ```bash
 VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
   python scripts/setup/check_environment.py robotwin --render
-python scripts/replay/replay_robotwin2_clean_training.py --help
-python scripts/replay/replay_robotwin2_paired_lighting_training.py --help
 ```
 
 If the NVIDIA ICD lives elsewhere, set `VK_ICD_FILENAMES` to the path provided

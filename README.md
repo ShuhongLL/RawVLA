@@ -32,8 +32,8 @@
 
 RAW-VLA is a streaming, illumination-adaptive RAW image frontend for
 vision-language-action policies. This repository contains the RAW frontend,
-StarVLA integration, RAWVLA-Bench lighting transforms, LIBERO and RoboTwin 2.0
-evaluation adapters, and the replay code used to produce training trajectories.
+StarVLA integration, RAWVLA-Bench lighting transforms, and LIBERO and RoboTwin
+2.0 evaluation adapters.
 
 ## 📦 Installation
 
@@ -55,17 +55,18 @@ Install only the environment needed for your workflow:
 
 | Workflow | Environment | What it runs |
 | --- | --- | --- |
-| LIBERO training, replay, and evaluation | `environment-libero.yml` (`starvla-libero`) | StarVLA, RAW-VLA, and LIBERO |
-| RoboTwin 2.0 simulator, replay, and evaluation | `environment-robotwin2.yml` (`robotwin`) | RoboTwin, SAPIEN, and CuRobo; StarVLA policy-server evaluation also needs `starvla-libero` |
-| ISP perturbation studies (optional) | Reuse `starvla-libero` | The legacy synthetic LIBERO experiments; no third environment is needed |
+| LIBERO training and evaluation | `environment-libero.yml` (`starvla-libero`) | StarVLA, RAW-VLA, and LIBERO |
+| RoboTwin 2.0 evaluation | `environment-robotwin2.yml` (`robotwin`) | RoboTwin simulator; StarVLA policy-server evaluation also needs `starvla-libero` |
+| ISP perturbation on LIBERO (optional) | `starvla-libero` | LIBERO synthetic ISP studies |
+| ISP perturbation on RoboTwin 2.0 (optional) | StarVLA: `starvla-libero` + `robotwin`; FastWAM: `environment-fastwam.yml` (`fastwam`) | RoboTwin synthetic ISP studies with either policy family |
 
-FastWAM, standalone OpenVLA-OFT, and GR00T have separate, optional environments;
+Standalone OpenVLA-OFT and GR00T have separate, optional environments;
 see [ENVIRONMENTS.md](ENVIRONMENTS.md) for their installation and validation.
 
 ### LIBERO and RAW-VLA
 
-Use this environment for LIBERO training, replay, evaluation, and the StarVLA
-policy server used alongside RoboTwin:
+Use this environment for LIBERO training and evaluation, and the StarVLA policy
+server used alongside RoboTwin:
 
 ```bash
 conda env create -f environment-libero.yml
@@ -94,18 +95,26 @@ bash scripts/setup/setup_robotwin_assets.sh
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 ```
 
-RoboTwin replay uses `robotwin`; evaluation with a StarVLA policy server also
-uses the `starvla-libero` environment above. See
+Evaluation with a StarVLA policy server also uses the `starvla-libero`
+environment above. See
 [ENVIRONMENTS.md](ENVIRONMENTS.md) for interpreter selection, host-specific
 graphics requirements, and validation commands.
 
 ### ISP perturbation (optional)
 
-The earlier synthetic EV, bit-depth, chromatic, and tonal studies run on
-LIBERO observations. Reuse `starvla-libero` and the appropriate policy
-checkpoints; no extra Conda environment is required. See
-[`experiments/isp_perturbation`](experiments/isp_perturbation/README.md) for
-the launchers and settings.
+The synthetic EV, sensor-noise, bit-depth, chromatic, and tonal studies cover
+both LIBERO and RoboTwin 2.0. LIBERO uses `starvla-libero`; RoboTwin with a
+StarVLA policy uses `robotwin` plus `starvla-libero`. For the RoboTwin FastWAM
+baseline, install its separate environment:
+
+```bash
+conda env create -f environment-fastwam.yml
+conda activate fastwam
+python -m pip install -e ./third_party/FastWAM
+```
+
+See [`experiments/isp_perturbation`](experiments/isp_perturbation/README.md)
+for the per-benchmark entry points, observation-key selection, and settings.
 
 ## 🧠 VLA Checkpoints
 
@@ -129,10 +138,10 @@ are included in the Hugging Face dataset.
 
 ### Train: Paired Trajectories (Hugging Face)
 
-The paired RAW/RGB training replay data is available directly from
+The paired RAW/RGB training trajectories are available directly from
 [RawVLA-Bench on Hugging Face](https://huggingface.co/datasets/ToferFish/RawVLA-Bench).
 It contains 2,403 successful trajectories: 1,771 from LIBERO and 632 from
-RoboTwin 2.0. No simulator replay is needed to use the published data.
+RoboTwin 2.0.
 
 ```bash
 hf download ToferFish/RawVLA-Bench \
@@ -147,8 +156,7 @@ After downloading, the train files are located at:
 - RoboTwin 2.0: `benchmark_data/RawVLA-Bench/data/robotwin2/raw/` and
   `benchmark_data/RawVLA-Bench/data/robotwin2/rgb/`.
 
-To regenerate these trajectories from source demonstrations instead, see
-[replay/README.md](replay/README.md).
+Optional data regeneration is documented in [replay/README.md](replay/README.md).
 
 ### Test: Evaluation Manifests (GitHub)
 
@@ -180,7 +188,7 @@ RoboTwin backbone preparation is documented in
 Additional experimental LIBERO recipes are documented separately in
 [`configs/libero/optional`](configs/libero/optional/README.md).
 Paths are resolved through `RAWVLA_ROOT`. This example uses the published
-LIBERO replay data described above:
+LIBERO training trajectories described above:
 
 ```bash
 export RAWVLA_ROOT="$PWD"

@@ -15,7 +15,7 @@ Install an NVIDIA driver compatible with the selected PyTorch wheel. The
 checked-in Conda files describe Python dependencies; system NVIDIA, Vulkan/EGL,
 compiler, and simulator asset installation remains host-specific.
 
-## StarVLA + LIBERO + RAW-VLA training and replay
+## StarVLA + LIBERO + RAW-VLA training and evaluation
 
 This is the main RAW-VLA environment. The checked-in pins match the validated
 environment: Python 3.10, PyTorch 2.6/CUDA 12.4,
@@ -47,7 +47,6 @@ Validate imports, RAW-VLA computation, and optional headless LIBERO rendering:
 python scripts/setup/check_environment.py rawvla
 MUJOCO_GL=egl PYOPENGL_PLATFORM=egl \
   python scripts/setup/check_environment.py starvla-libero --render
-python scripts/replay/replay_libero_train_rawvla_light_npz.py --help
 ```
 
 ## RoboTwin 2.0
@@ -61,8 +60,6 @@ ROBOTWIN_ASSETS_SOURCE=/path/to/existing/RoboTwin/assets \
 ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
 VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
   python scripts/setup/check_environment.py robotwin --render
-python scripts/replay/replay_robotwin2_clean_training.py --help
-python scripts/replay/replay_robotwin2_paired_lighting_training.py --help
 ```
 
 The RoboTwin installer builds CuRobo and applies the SAPIEN/MPLib compatibility
@@ -73,9 +70,12 @@ complete asset tree or downloads and extracts the three official archives.
 Keep the activated environment's `bin` directory on `PATH`: CuRobo
 uses the environment's `ninja` executable when it must rebuild CUDA extensions.
 
-## FastWAM
+## FastWAM for RoboTwin ISP perturbation (optional)
 
 FastWAM uses a newer PyTorch/CUDA stack and should not share the StarVLA env.
+Its RoboTwin evaluation uses the RoboTwin checkout pinned inside FastWAM; see
+[`experiments/isp_perturbation`](experiments/isp_perturbation/README.md) for
+the image-key and perturbation settings.
 
 ```bash
 conda env create -f environment-fastwam.yml
