@@ -130,7 +130,13 @@ def _resolve_dataset_stats_path(dataset_stats_path: Optional[str]) -> Path:
 
 
 def _resize_rgb(image: np.ndarray, size_wh: tuple[int, int]) -> np.ndarray:
-    pil_image = Image.fromarray(image.astype(np.uint8), mode="RGB")
+    image = np.asarray(image)
+    if image.dtype != np.uint8:
+        image = np.asarray(image, dtype=np.float32)
+        if not np.isfinite(image).all() or float(image.min()) < 0.0 or float(image.max()) > 1.0:
+            raise ValueError("Expected uint8 RGB or float RGB in [0, 1]")
+        image = np.rint(image * np.float32(255.0)).astype(np.uint8)
+    pil_image = Image.fromarray(image, mode="RGB")
     resized = pil_image.resize(size_wh, resample=Image.BILINEAR)
     return np.asarray(resized, dtype=np.uint8)
 
