@@ -22,10 +22,10 @@
 </p>
 
 <p>
-  <a href="https://shuhongll.github.io/rawvla/">Project Page</a> ·
-  <a href="https://arxiv.org/abs/2609.37530">Paper</a> ·
-  <a href="https://github.com/ShuhongLL/RawVLA">Code</a> ·
-  <a href="https://huggingface.co/datasets/ToferFish/RawVLA-Bench">RawVLA-Bench</a>
+  <a href="https://shuhongll.github.io/rawvla/"><img src="https://img.shields.io/badge/Project-Page-2962FF?style=for-the-badge" alt="Project Page"></a>
+  <a href="https://arxiv.org/abs/2609.37530"><img src="https://img.shields.io/badge/arXiv-2609.37530-B31B1B?style=for-the-badge&amp;logo=arxiv&amp;logoColor=white" alt="Paper on arXiv"></a>
+  <a href="https://github.com/ShuhongLL/RawVLA"><img src="https://img.shields.io/badge/GitHub-Code-181717?style=for-the-badge&amp;logo=github&amp;logoColor=white" alt="Code on GitHub"></a>
+  <a href="https://huggingface.co/datasets/ToferFish/RawVLA-Bench"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-RawVLA--Bench-FFD21E?style=for-the-badge&amp;logoColor=black" alt="RawVLA-Bench on Hugging Face"></a>
 </p>
 
 </div>
@@ -49,23 +49,63 @@ git submodule update --init --recursive
 Several project-maintained submodules are branches of this repository. Their
 branch and pinned commit are documented in [SUBMODULES.md](SUBMODULES.md).
 
-### Conda environments
+### Choose an environment
 
-The full system uses separate environments because StarVLA/LIBERO, RoboTwin,
-FastWAM, OpenVLA-OFT, and GR00T have incompatible dependency stacks. Complete
-installation and validation commands are in [ENVIRONMENTS.md](ENVIRONMENTS.md).
+Install only the environment needed for your workflow:
 
-The two main environments are:
+| Workflow | Environment | What it runs |
+| --- | --- | --- |
+| LIBERO training, replay, and evaluation | `environment-libero.yml` (`starvla-libero`) | StarVLA, RAW-VLA, and LIBERO |
+| RoboTwin 2.0 simulator, replay, and evaluation | `environment-robotwin2.yml` (`robotwin`) | RoboTwin, SAPIEN, and CuRobo; StarVLA policy-server evaluation also needs `starvla-libero` |
+| ISP perturbation studies (optional) | Reuse `starvla-libero` | The legacy synthetic LIBERO experiments; no third environment is needed |
+
+FastWAM, standalone OpenVLA-OFT, and GR00T have separate, optional environments;
+see [ENVIRONMENTS.md](ENVIRONMENTS.md) for their installation and validation.
+
+### LIBERO and RAW-VLA
+
+Use this environment for LIBERO training, replay, evaluation, and the StarVLA
+policy server used alongside RoboTwin:
 
 ```bash
 conda env create -f environment-libero.yml
-conda env create -f environment-robotwin2.yml
+conda activate starvla-libero
+python -m pip install --no-deps --no-build-isolation -e ./third_party/LIBERO
+python -m pip install --no-deps -e ./third_party/openvla-oft
+python -m pip install --no-deps -e ./starVLA
+export LIBERO_CONFIG_PATH="$PWD/.local/libero"
+python scripts/setup/configure_libero.py
 ```
 
-After installing StarVLA/LIBERO, generate the ignored machine-local LIBERO
-simulator paths in `.local/libero/config.yaml` with
-`python scripts/setup/configure_libero.py`. The versioned RAW-VLA training recipes
-live separately in `configs/libero/`.
+The last command writes ignored, machine-local simulator paths to
+`.local/libero/config.yaml`. Versioned RAW-VLA training recipes are in
+[`configs/libero`](configs/libero).
+
+### RoboTwin 2.0
+
+Install the simulator in its own environment. The asset script downloads the
+official assets unless you set `ROBOTWIN_ASSETS_SOURCE` to an existing asset
+directory:
+
+```bash
+conda env create -f environment-robotwin2.yml
+conda activate robotwin
+bash scripts/setup/setup_robotwin_assets.sh
+ROBOTWIN_PYTHON=python bash third_party/RoboTwin/script/_install.sh
+```
+
+RoboTwin replay uses `robotwin`; evaluation with a StarVLA policy server also
+uses the `starvla-libero` environment above. See
+[ENVIRONMENTS.md](ENVIRONMENTS.md) for interpreter selection, host-specific
+graphics requirements, and validation commands.
+
+### ISP perturbation (optional)
+
+The earlier synthetic EV, bit-depth, chromatic, and tonal studies run on
+LIBERO observations. Reuse `starvla-libero` and the appropriate policy
+checkpoints; no extra Conda environment is required. See
+[`experiments/isp_perturbation`](experiments/isp_perturbation/README.md) for
+the launchers and settings.
 
 ## 🧠 VLA Checkpoints
 
@@ -121,10 +161,13 @@ The test protocols are recorded in these frozen simulator rollout manifests:
 - [RoboTwin 2.0 evaluation](experiments/simulation/robotwin/manifests/robotwin2_test_manifest_50_seeds_3250_rollouts.json):
   13 tasks × 50 seeds × 5 lighting domains = 3,250 rollouts.
 
-The manifests fix episode seeds and lighting conditions. The LIBERO runner
-reads its manifest directly; the current RoboTwin runner does not load its
-JSON manifest automatically. During evaluation, the simulator renders
-observations and the policy produces actions.
+The manifests specify task, seed, and lighting choices. The LIBERO runner
+reads its manifest directly. The RoboTwin JSON documents the 3,250 benchmark
+cases, but the RoboTwin runner shown below uses its own task list and
+`easy`/`hard` settings; it does not execute those JSON entries automatically.
+The example command below launches an evaluation, not the exact frozen
+3,250-rollout protocol. During evaluation, the simulator renders observations
+and the policy produces actions.
 
 ## 🏋️ Training
 
